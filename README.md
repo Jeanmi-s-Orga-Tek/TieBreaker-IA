@@ -406,3 +406,130 @@ python src/tiebreaker_cli.py
 ---
 
 *This documentation helps new developers understand the project architecture and contribution process.*
+
+## 🛠️ Documentation Développeur
+
+### Vue d'ensemble de l'architecture
+
+TieBreaker AI suit une architecture modulaire conçue pour la prédiction de matchs de tennis :
+
+```
+TieBreaker-IA/
+├── data/                 # Jeux de données ATP et classements
+├── src/                  # Logique applicative principale
+│   ├── main.py          # Générateur du lanceur CLI
+│   └── tiebreaker_cli.py # Implémentation CLI principale
+├── executable/           # Scripts de build de l'exécutable
+├── models/              # Stockage des modèles ML (futurs)
+└── Documentation/       # Documentation du projet
+```
+
+### Systèmes principaux
+
+1. **Couche Données** : Données historiques des matchs ATP et classements joueurs
+2. **Interface CLI** : Interface en ligne de commande pour les requêtes
+3. **Système Elo** : Système de classement adaptatif pour les prédictions
+4. **Moteur de Requêtes** : Recherche rapide de joueurs et confrontations
+
+### Configuration du développement
+
+#### Prérequis
+- Python 3.11+
+- Git
+- Environnement virtuel (recommandé)
+
+#### Démarrage rapide
+```bash
+# Clonage et configuration
+git clone https://github.com/username/TieBreaker-IA.git
+cd TieBreaker-IA
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
+pip install -r requirements.txt
+
+# Construction de l'exécutable
+./executable/build
+
+# Test d'installation
+./TieBreaker --help
+```
+
+### Conventions de code
+
+#### Style Python
+- Respecter PEP 8
+- Utiliser les type hints pour les paramètres de fonction
+- Longueur maximale des lignes : 88 caractères
+- Noms de variables descriptifs
+
+#### Messages de commit
+- Utiliser l'impératif : "Add feature" et non "Added feature"
+- Commencer par le composant : "CLI: Add player search"
+- Garder sous 50 caractères
+
+#### Nommage des branches
+- Fonctionnalités : `feature/description`
+- Corrections : `bugfix/issue-number`
+- Documentation : `docs/improvement`
+
+### Référence API
+
+#### Commandes CLI
+
+##### Requête de classement
+```bash
+./TieBreaker rank --player "Nom Joueur" [--date YYYY-MM-DD]
+```
+
+##### Analyse de match
+```bash
+./TieBreaker match --p1 "Joueur 1" --p2 "Joueur 2" [filtres...]
+```
+
+### Tests
+
+Lancer la suite de tests :
+```bash
+python -m pytest tests/
+```
+
+### Déploiement
+
+#### Développement local
+```bash
+# Exécution en mode développement
+python src/tiebreaker_cli.py
+```
+
+#### Build de production
+```bash
+# Créer l'exécutable distribuable
+./executable/build
+```
+
+### Dépannage
+
+#### Problèmes courants
+
+1. **Permission refusée sur l'exécutable**
+   ```bash
+   chmod +x executable/build executable/clean
+   ```
+
+2. **Fichiers de données manquants**
+   - S'assurer que le dossier `data/` contient les jeux de données ATP
+   - Télécharger depuis les sources officielles ATP si nécessaire
+
+3. **Conflits de version Python**
+   - Utiliser pyenv pour gérer les versions Python
+   - Recommandé : Python 3.11 ou 3.12
+
+### Notes de performance
+
+- Les premières requêtes de classement peuvent prendre 2-3 secondes en raison du chargement des données
+- Les requêtes suivantes sont mises en cache et répondent en <100ms
+- L'utilisation mémoire évolue avec la taille du jeu de données (actuellement ~500MB pour l'historique ATP complet)
+
+---
+
+*Cette documentation aide les nouveaux développeurs à comprendre l'architecture du projet et le processus de contribution.*
