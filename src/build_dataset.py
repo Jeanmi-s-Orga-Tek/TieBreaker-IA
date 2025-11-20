@@ -12,7 +12,8 @@ from typing import Any, Mapping
 import numpy as np
 import pandas as pd
 
-from .tiebreaker_cli import DataHub
+from .models import DataHub
+from .features_recent import add_recent_form_features
 
 
 @dataclass(slots=True)
@@ -384,7 +385,8 @@ def build_dataset(matches: pd.DataFrame, rankings: pd.DataFrame, players_lookup:
         record = canonicalize_ab(row._asdict(), rankings, players_lookup)
         records.append(record)
     df = pd.DataFrame(records)
-    return add_one_hot_features(df)
+    df = add_one_hot_features(df)
+    return add_recent_form_features(matches, df)
 
 
 def add_one_hot_features(df: pd.DataFrame) -> pd.DataFrame:
