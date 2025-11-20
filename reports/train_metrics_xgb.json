@@ -1,0 +1,29 @@
+{
+  "train": {
+    "auc": 0.694363280040639,
+    "logloss": 0.5790187475323972,
+    "brier": 0.19906403024706287,
+    "n": 876111
+  },
+  "val": {
+    "auc": 0.6466693828082608,
+    "logloss": 0.6123225743678133,
+    "brier": 0.21237591295197933,
+    "n": 31275
+  },
+  "test": {
+    "auc": 0.6410420352368713,
+    "logloss": 0.6078041570351058,
+    "brier": 0.21048220138353613,
+    "n": 32689
+  },
+  "config": {
+    "train_end_year": 2022,
+    "val_end_year": 2023,
+    "n_features": 29,
+    "model_type": "xgboost",
+    "calibration_method": "isotonic",
+    "split_strategy": "year",
+    "auto_bounds": true
+  }
+}

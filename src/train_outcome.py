@@ -14,21 +14,19 @@ import joblib
 import numpy as np
 import pandas as pd
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import brier_score_loss, log_loss, roc_auc_score
 from sklearn.pipeline import Pipeline
 
+try:
+    from xgboost import XGBClassifier  # type: ignore
+except ImportError as exc:  # pragma: no cover
+    raise ImportError(
+        "xgboost is required for train_outcome.py. Install it via `pip install xgboost`."
+    ) from exc
+
 LOGGER = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-
-try:  # Optional dependency
-    from xgboost import XGBClassifier  # type: ignore
-
-    HAS_XGB = True
-except ImportError:  # pragma: no cover - only triggered when xgboost missing
-    XGBClassifier = None  # type: ignore
-    HAS_XGB = False
 
 EXCLUDE_COLUMNS = {
     "y",
@@ -63,24 +61,25 @@ class TrainingArtifacts:
     calibration_method: str | None
 
 
+@dataclass(slots=True)
+class SplitConfig:
+    train_end_year: int
+    val_end_year: int
+    auto_bounds: bool
+    strategy: str  # "year" ou "row_split"
+    row_split_year: int | None = None
+    row_split_test_year: int | None = None
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train TieBreaker outcome model")
     parser.add_argument("--data", required=True, help="Chemin vers le dataset Parquet A/B")
-    parser.add_argument("--train-end-year", type=int, default=2021, help="Dernière année incluse dans le train (défaut: 2021)")
-    parser.add_argument("--val-end-year", type=int, default=2023, help="Dernière année incluse dans la validation (défaut: 2023)")
+    parser.add_argument("--train-end-year", type=int, default=None, help="Dernière année incluse dans le train (auto si absent)")
+    parser.add_argument("--val-end-year", type=int, default=None, help="Dernière année incluse dans la validation (auto si absent)")
     parser.add_argument("--model-out", default="models/outcome_model.pkl", help="Chemin de sortie du modèle (pkl)")
     parser.add_argument("--report-out", default="reports/train_metrics.json", help="Chemin du rapport JSON")
     parser.add_argument("--seed", type=int, default=42, help="Seed aléatoire")
-    parser.add_argument("--force-xgb", action="store_true", help="Forcer l'utilisation de XGBoost (erreur si indisponible)")
-    parser.add_argument("--force-gbdt", action="store_true", help="Forcer GradientBoostingClassifier même si XGBoost est installé")
-    args = parser.parse_args(argv)
-    if args.force_xgb and args.force_gbdt:
-        parser.error("Choisir --force-xgb ou --force-gbdt, pas les deux.")
-    if args.force_xgb and not HAS_XGB:
-        parser.error("xgboost n'est pas installé, impossible d'utiliser --force-xgb.")
-    if args.val_end_year < args.train_end_year:
-        parser.error("val_end_year doit être >= train_end_year")
-    return args
+    return parser.parse_args(argv)
 
 
 def load_dataset(data_path: Path) -> pd.DataFrame:
@@ -108,26 +107,138 @@ def get_feature_columns(df: pd.DataFrame) -> list[str]:
     return features
 
 
-def build_splits(df: pd.DataFrame, train_end_year: int, val_end_year: int, feature_cols: list[str]) -> DatasetSplits:
-    mask_train = df["year"] <= train_end_year
-    mask_val = (df["year"] > train_end_year) & (df["year"] <= val_end_year)
-    mask_test = df["year"] > val_end_year
+def get_available_years(df: pd.DataFrame) -> list[int]:
+    years = sorted(df["year"].dropna().unique().tolist())
+    if not years:
+        raise ValueError("Aucune année valide détectée dans tourney_date")
+    LOGGER.info(
+        "Années disponibles (%d) — de %s à %s",
+        len(years),
+        years[0],
+        years[-1],
+    )
+    return years
 
-    if mask_train.sum() == 0:
-        fallback_year = int(df["year"].min())
-        LOGGER.warning(
-            "Aucune donnée dans le split train (<= %s). Fallback sur l'année minimale disponible %s.",
-            train_end_year,
-            fallback_year,
+
+def resolve_split_config(years: list[int], train_arg: int | None, val_arg: int | None) -> SplitConfig:
+    auto_bounds = train_arg is None and val_arg is None
+    if auto_bounds:
+        if len(years) >= 3:
+            cfg = SplitConfig(
+                train_end_year=years[-3],
+                val_end_year=years[-2],
+                auto_bounds=True,
+                strategy="year",
+            )
+            LOGGER.info(
+                "Split auto: train <= %s, val = %s, test >= %s",
+                cfg.train_end_year,
+                cfg.val_end_year,
+                years[-1],
+            )
+            return cfg
+        if len(years) == 2:
+            cfg = SplitConfig(
+                train_end_year=years[0],
+                val_end_year=years[0],
+                auto_bounds=True,
+                strategy="row_split",
+                row_split_year=years[0],
+                row_split_test_year=years[1],
+            )
+            LOGGER.info(
+                "Split auto (2 années): train/val sur %s (split lignes), test sur %s",
+                years[0],
+                years[1],
+            )
+            return cfg
+        raise ValueError("Pas assez d'années pour créer une validation (il faut >= 2)")
+
+    train_end = train_arg if train_arg is not None else years[0]
+    val_end = val_arg if val_arg is not None else years[-1]
+    if val_end < train_end:
+        raise ValueError(
+            f"val_end_year ({val_end}) doit être >= train_end_year ({train_end})."
         )
-        mask_train = df["year"] == fallback_year
-        mask_val &= ~mask_train
-        mask_test &= ~mask_train
+    LOGGER.info(
+        "Split défini par l'utilisateur: train <= %s, val <= %s",
+        train_end,
+        val_end,
+    )
+    return SplitConfig(
+        train_end_year=train_end,
+        val_end_year=val_end,
+        auto_bounds=False,
+        strategy="year",
+    )
+
+
+def _build_row_split_masks(
+    df: pd.DataFrame,
+    first_year: int,
+    test_year: int,
+    seed: int,
+) -> tuple[pd.Series, pd.Series, pd.Series]:
+    first_idx = df.index[df["year"] == first_year].to_numpy()
+    if len(first_idx) < 2:
+        raise ValueError(
+            f"Impossible de créer une validation: l'année {first_year} ne contient pas assez de matches."
+        )
+    rng = np.random.default_rng(seed)
+    perm = rng.permutation(first_idx)
+    split_pt = max(1, int(round(len(perm) * 0.8)))
+    if split_pt >= len(perm):
+        split_pt = len(perm) - 1
+    train_idx = perm[:split_pt]
+    val_idx = perm[split_pt:]
+    mask_train = pd.Series(False, index=df.index)
+    mask_val = pd.Series(False, index=df.index)
+    mask_train.loc[train_idx] = True
+    mask_val.loc[val_idx] = True
+    mask_test = df["year"] == test_year
+    if mask_test.sum() == 0:
+        raise ValueError(f"Aucune donnée pour l'année test {test_year}.")
+    return mask_train, mask_val, mask_test
+
+
+def build_splits(
+    df: pd.DataFrame,
+    feature_cols: list[str],
+    split_cfg: SplitConfig,
+    years: list[int],
+    seed: int,
+) -> DatasetSplits:
+    if split_cfg.strategy == "row_split":
+        assert split_cfg.row_split_year is not None and split_cfg.row_split_test_year is not None
+        mask_train, mask_val, mask_test = _build_row_split_masks(
+            df,
+            split_cfg.row_split_year,
+            split_cfg.row_split_test_year,
+            seed,
+        )
+    else:
+        mask_train = df["year"] <= split_cfg.train_end_year
+        mask_val = (df["year"] > split_cfg.train_end_year) & (df["year"] <= split_cfg.val_end_year)
+        mask_test = df["year"] > split_cfg.val_end_year
+
+    n_train = int(mask_train.sum())
+    n_val = int(mask_val.sum())
+    n_test = int(mask_test.sum())
+    LOGGER.info("Répartition des splits — train: %d, val: %d, test: %d", n_train, n_val, n_test)
+
+    if n_train == 0 or n_val == 0 or n_test == 0:
+        msg = (
+            f"Invalid year split: n_train={n_train}, n_val={n_val}, n_test={n_test}. "
+            f"Années dataset: {years[0]}-{years[-1]} (config train_end={split_cfg.train_end_year}, val_end={split_cfg.val_end_year})."
+        )
+        if split_cfg.auto_bounds:
+            raise ValueError("Impossible de construire un split automatique valide. " + msg)
+        raise ValueError(msg + " Vérifiez --train-end-year/--val-end-year.")
 
     X = df[feature_cols].replace({np.inf: np.nan, -np.inf: np.nan})
     y = df["y"]
 
-    splits = DatasetSplits(
+    return DatasetSplits(
         X_train=X[mask_train],
         y_train=y[mask_train],
         X_val=X[mask_val],
@@ -136,26 +247,10 @@ def build_splits(df: pd.DataFrame, train_end_year: int, val_end_year: int, featu
         y_test=y[mask_test],
     )
 
-    LOGGER.info(
-        "Répartition des splits — train: %d, val: %d, test: %d",
-        len(splits.X_train),
-        len(splits.X_val),
-        len(splits.X_test),
-    )
-    if len(splits.X_val) == 0:
-        LOGGER.warning("Split validation vide — réutilisation du train pour l'early stopping / calibration.")
-    if len(splits.X_test) == 0:
-        LOGGER.warning("Split test vide — les métriques test seront absentes.")
-    return splits
 
-
-def init_classifier(force_gbdt: bool, force_xgb: bool, seed: int) -> Tuple[Any, str]:
-    if force_gbdt or (not HAS_XGB and not force_xgb):
-        LOGGER.info("Utilisation du modèle GradientBoostingClassifier")
-        model = GradientBoostingClassifier(n_estimators=400, learning_rate=0.05, max_depth=3, random_state=seed)
-        return model, "gradient_boosting"
+def init_classifier(seed: int) -> Tuple[Any, str]:
     LOGGER.info("Utilisation du modèle XGBoost")
-    model = XGBClassifier(  # type: ignore[call-arg]
+    model = XGBClassifier(
         objective="binary:logistic",
         eval_metric="logloss",
         n_estimators=1000,
@@ -171,36 +266,42 @@ def init_classifier(force_gbdt: bool, force_xgb: bool, seed: int) -> Tuple[Any, 
 
 def train_classifier(
     model: Any,
-    model_type: str,
     imputer: SimpleImputer,
     splits: DatasetSplits,
-) -> Tuple[Any, np.ndarray, np.ndarray]:
+) -> Tuple[Any, np.ndarray | None, np.ndarray | None]:
     X_train = imputer.fit_transform(splits.X_train)
     y_train = splits.y_train.to_numpy()
+    X_val_imp = imputer.transform(splits.X_val) if len(splits.X_val) > 0 else None
+    y_val_arr = splits.y_val.to_numpy() if len(splits.y_val) > 0 else None
 
-    X_cal = splits.X_val if len(splits.X_val) > 0 else splits.X_train
-    y_cal = splits.y_val if len(splits.y_val) > 0 else splits.y_train
-    X_cal_imp = imputer.transform(X_cal)
-
-    if model_type == "xgboost":
-        fit_kwargs: Dict[str, Any] = {"verbose": False}
-        if len(X_cal_imp) > 0:
-            fit_kwargs["eval_set"] = [(X_cal_imp, y_cal.to_numpy())]
-            fit_kwargs["early_stopping_rounds"] = 50
-        else:
-            LOGGER.warning("Pas de données pour l'early stopping XGBoost.")
-        model.fit(X_train, y_train, **fit_kwargs)
+    eval_set: list[tuple[np.ndarray, np.ndarray]] = [(X_train, y_train)]
+    fit_kwargs: Dict[str, Any] = {"eval_set": eval_set, "verbose": False}
+    if X_val_imp is not None and y_val_arr is not None and len(y_val_arr) > 0:
+        eval_set.append((X_val_imp, y_val_arr))
+        fit_kwargs["early_stopping_rounds"] = 50
     else:
-        model.fit(X_train, y_train)
+        LOGGER.warning("Pas de validation pour l'early stopping — entraînement sans early stopping.")
 
-    return model, X_cal_imp, y_cal.to_numpy()
+    try:
+        model.fit(X_train, y_train, **fit_kwargs)
+    except TypeError as exc:
+        if "early_stopping_rounds" in str(exc):
+            LOGGER.warning("XGBoost ne supporte pas early_stopping_rounds — nouvel entraînement sans early stopping.")
+            fit_kwargs.pop("early_stopping_rounds", None)
+            model.fit(X_train, y_train, **fit_kwargs)
+        else:
+            raise
+    return model, X_val_imp, y_val_arr
 
 
 def calibrate_model(
     base_model: Any,
-    X_cal: np.ndarray,
-    y_cal: np.ndarray,
+    X_cal: np.ndarray | None,
+    y_cal: np.ndarray | None,
 ) -> Tuple[Any, str | None]:
+    if X_cal is None or y_cal is None or len(y_cal) == 0:
+        LOGGER.warning("Pas de set de validation: calibration ignorée.")
+        return base_model, None
     if len(np.unique(y_cal)) < 2:
         LOGGER.warning("Impossible de calibrer (une seule classe). Modèle non calibré.")
         return base_model, None
@@ -257,11 +358,20 @@ def train_pipeline(args: argparse.Namespace) -> TrainingArtifacts:
     data_path = Path(args.data)
     df = load_dataset(data_path)
     feature_cols = get_feature_columns(df)
-    splits = build_splits(df, args.train_end_year, args.val_end_year, feature_cols)
+    years = get_available_years(df)
+    split_cfg = resolve_split_config(years, args.train_end_year, args.val_end_year)
+    LOGGER.info(
+        "Bornes retenues — train_end_year=%s, val_end_year=%s (auto=%s, stratégie=%s)",
+        split_cfg.train_end_year,
+        split_cfg.val_end_year,
+        split_cfg.auto_bounds,
+        split_cfg.strategy,
+    )
+    splits = build_splits(df, feature_cols, split_cfg, years, args.seed)
 
     imputer = SimpleImputer(strategy="median")
-    base_model, model_type = init_classifier(args.force_gbdt, args.force_xgb, args.seed)
-    trained_model, X_cal, y_cal = train_classifier(base_model, model_type, imputer, splits)
+    base_model, model_type = init_classifier(args.seed)
+    trained_model, X_cal, y_cal = train_classifier(base_model, imputer, splits)
     calibrated_model, calibration_method = calibrate_model(trained_model, X_cal, y_cal)
     pipeline = build_final_pipeline(imputer, calibrated_model)
 
@@ -270,11 +380,13 @@ def train_pipeline(args: argparse.Namespace) -> TrainingArtifacts:
         "val": evaluate_split(pipeline, splits.X_val, splits.y_val),
         "test": evaluate_split(pipeline, splits.X_test, splits.y_test),
         "config": {
-            "train_end_year": args.train_end_year,
-            "val_end_year": args.val_end_year,
+            "train_end_year": split_cfg.train_end_year,
+            "val_end_year": split_cfg.val_end_year,
             "n_features": len(feature_cols),
             "model_type": model_type,
             "calibration_method": calibration_method,
+            "split_strategy": split_cfg.strategy,
+            "auto_bounds": split_cfg.auto_bounds,
         },
     }
 
@@ -300,10 +412,12 @@ def main(argv: list[str] | None = None) -> int:
     bundle = {
         "model": artifacts.model,
         "features": artifacts.feature_columns,
-        "train_end_year": args.train_end_year,
-        "val_end_year": args.val_end_year,
+        "train_end_year": artifacts.metrics["config"]["train_end_year"],
+        "val_end_year": artifacts.metrics["config"]["val_end_year"],
         "model_type": artifacts.model_type,
         "calibration_method": artifacts.calibration_method,
+        "split_strategy": artifacts.metrics["config"].get("split_strategy"),
+        "auto_bounds": artifacts.metrics["config"].get("auto_bounds"),
         "created_at": datetime.now(UTC).isoformat(),
     }
     save_model(model_path, bundle)

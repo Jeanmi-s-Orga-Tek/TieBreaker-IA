@@ -10,7 +10,7 @@ from pathlib import Path
 from datetime import datetime
 import pandas as pd
 
-from parser import parse_rank_date_col
+from .parser import parse_rank_date_col
 
 # class DecisionTreeModel:
 
