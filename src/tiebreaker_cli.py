@@ -6,6 +6,14 @@
 ##
 
 from .models import DataHub
+from testLib import (
+    TrainConfig,
+    latest_match_for_player,
+    load_matches,
+    predict_match,
+    train_model,
+)
+from testLib.data.matches import resolve_data_root
 import argparse
 import sys
 import re
@@ -99,76 +107,29 @@ def cmd_match(args, hub: DataHub):
             print(f"Joueur P2 introuvable: {args.p2}", file=sys.stderr)
         return 1
 
-    years = None
-    if args.year:
-        try:
-            years = [int(args.year)]
-        except Exception:
-            print("--year doit être un entier (ex: 2023)", file=sys.stderr)
-            return 1
-    elif not args.all_years:
-        this_year = datetime.utcnow().year
-        years = list(range(this_year - 9, this_year + 1))
+    data_root = resolve_data_root(args.data_root)
+    matches = load_matches(data_root=data_root, years=args.years)
+    match_a = latest_match_for_player(matches, p1)
+    match_b = latest_match_for_player(matches, p2)
+    if match_a is None or match_b is None:
+        missing = []
+        if match_a is None:
+            missing.append(p1)
+        if match_b is None:
+            missing.append(p2)
+        print(f"Aucun historique récent pour: {', '.join(missing)}", file=sys.stderr)
+        return 1
 
-    matches = hub.load_matches(years=years)
+    def _predict():
+        return predict_match(match_a, match_b, p1, p2)
 
-    def name_match_col(col: str, target: str) -> pd.Series:
-        return matches[col].str.casefold().str.strip() == target.casefold().strip()
+    try:
+        result = _predict()
+    except FileNotFoundError:
+        train_model(TrainConfig(years=args.years[0] if args.years else None), data_root=data_root)
+        result = _predict()
 
-    mask_pair = ( (name_match_col("winner_name", p1) & name_match_col("loser_name", p2)) | (name_match_col("winner_name", p2) & name_match_col("loser_name", p1)) )
-    df = matches[mask_pair].copy()
-    if args.tournament:
-        df = df[df["tourney_name"].str.contains(args.tournament, case=False, na=False)]
-    if args.round:
-        df = df[df["round"].str.fullmatch(args.round, case=False, na=False)]
-    if args.surface:
-        df = df[df["surface"].str.fullmatch(args.surface, case=False, na=False)]
-    if args.date:
-        d = date_parse_or_none(args.date)
-        if d:
-            df = df[df["tourney_date"] == d]
-
-    if df.empty:
-        scope = f" (années {min(years)}-{max(years)})" if years else ""
-        print(f"Aucun match {p1} vs {p2}{scope} avec ces filtres.")
-        return 0
-
-    if "tourney_date" in df.columns:
-        df = df.sort_values(["tourney_date", "tourney_name", "round"], na_position="last")
-    else:
-        df = df.sort_values(["tourney_name", "round"], na_position="last")
-
-    cols = df.columns
-    have_minutes = "minutes" in cols
-    have_score = "score" in cols
-    have_best_of = "best_of" in cols
-    have_round = "round" in cols
-    have_surface = "surface" in cols
-
-    def row_to_str(r):
-        date_str = r["tourney_date"].isoformat() if pd.notna(r.get("tourney_date")) else "????-??-??"
-        parts = [f"{date_str} — {r.get('tourney_name','?')}"]
-        if have_surface and pd.notna(r.get("surface")):
-            parts[-1] += f" ({r['surface']})"
-        if have_round and pd.notna(r.get("round")):
-            parts.append(f"R: {r['round']}")
-        if have_best_of and pd.notna(r.get("best_of")):
-            try:
-                parts.append(f"Best-of-{int(r['best_of'])}")
-            except Exception:
-                pass
-        wl = f"{r.get('winner_name','?')} def. {r.get('loser_name','?')}"
-        if have_score and pd.notna(r.get('score')):
-            wl += f"  {r['score']}"
-        if have_minutes and pd.notna(r.get('minutes')):
-            try:
-                wl += f"  ({int(r['minutes'])} min)"
-            except Exception:
-                pass
-        return " | ".join(parts) + " | " + wl
-
-    for _, r in df.iterrows():
-        print(row_to_str(r))
+    print(f"Winner: {result['winner']}")
     return 0
 
 def build_parser():
@@ -181,15 +142,10 @@ def build_parser():
     ap_rank.add_argument("--date", help="Date ISO (YYYY-MM-DD). If absent, take the last available ranking (current if available, otherwise historical).")
     ap_rank.set_defaults(func=cmd_rank)
 
-    ap_match = sp.add_parser("match", help="Find the result of a specific match between two players")
-    ap_match.add_argument("--p1", required=True, help="Player 1 (indifferent order)")
-    ap_match.add_argument("--p2", required=True, help="Player 2 (indifferent order)")
-    ap_match.add_argument("--year", help="Exact year (ex: 2023). Speed up your search.")
-    ap_match.add_argument("--tournament", help="Filter by tournament name (contains)")
-    ap_match.add_argument("--round", help="Exact round filter (ex: F, SF, QF, R16, R32, R64, R128)")
-    ap_match.add_argument("--surface", help="Exact surface filter (Hard, Clay, Grass, Carpet)")
-    ap_match.add_argument("--date", help="Exact date filter for match/tournament (YYYY-MM-DD)")
-    ap_match.add_argument("--all-years", action="store_true", help="Browse all years (slow) if --year is absent")
+    ap_match = sp.add_parser("match", help="Predict the winner between two players")
+    ap_match.add_argument("--p1", required=True, help="Player 1")
+    ap_match.add_argument("--p2", required=True, help="Player 2")
+    ap_match.add_argument("--years", nargs="*", type=int, help="Optional list of years to draw recent matches from")
     ap_match.set_defaults(func=cmd_match)
     return ap
 

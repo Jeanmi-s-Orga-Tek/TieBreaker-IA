@@ -1,0 +1,32 @@
+{
+  "accuracy": 0.7787610619469026,
+  "train_accuracy": 0.9046563192904656,
+  "n_train": 451,
+  "n_test": 113,
+  "n_features": 13,
+  "feature_names": [
+    "rank_diff",
+    "rank_points_diff",
+    "ace_diff",
+    "df_diff",
+    "first_serve_pct_diff",
+    "first_win_pct_diff",
+    "second_win_pct_diff",
+    "bp_save_pct_diff",
+    "aggressiveness_diff",
+    "pressure_points_diff",
+    "svpt_diff",
+    "p1_rank",
+    "p2_rank"
+  ],
+  "tree_depth": 5,
+  "tree_leaves": 18,
+  "records_built": 564,
+  "unique_players": 564,
+  "date_range": [
+    "2023-01-02",
+    "2024-12-18"
+  ],
+  "year_window": 2,
+  "saved_at": "2025-11-20T14:46:36.229152"
+}
