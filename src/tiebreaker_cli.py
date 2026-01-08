@@ -25,9 +25,10 @@ from difflib import get_close_matches
 import joblib
 
 try:
-    from comparisonModels import compare_models
+    from comparisonModels import evaluate_binary_prob_model, bootstrap_ci_diff
 except ModuleNotFoundError:
-    compare_models = None
+    evaluate_binary_prob_model = None
+    bootstrap_ci_diff = None
 
 def norm(s: str) -> str:
     return re.sub(r'\s+', ' ', s.strip().casefold())
@@ -150,30 +151,197 @@ def _load_model_bundle_or_exit(path_value: str | Path):
         print(f"Erreur: impossible de charger le modèle: {path} ({exc})", file=sys.stderr)
         raise SystemExit(2)
 
-def cmd_comparison_models(args):
-    if compare_models is None:
-        print("Erreur: module `comparisonModels` introuvable ou ne fournit pas `compare_models`.", file=sys.stderr)
+def _predict_proba_from_joblib_model(model_obj, X):
+    """Return P(class=1) for a variety of sklearn-like estimators."""
+    import numpy as np
+
+    if hasattr(model_obj, "predict_proba"):
+        proba = model_obj.predict_proba(X)
+        # binary: columns [P(0), P(1)]
+        return np.asarray(proba)[:, 1].astype(float)
+    # fallback: hard predictions
+    pred = model_obj.predict(X)
+    return np.asarray(pred, dtype=float)
+
+
+def _build_eval_xy(data_root: Path | None = None, years: int | None = 6):
+    """Build an evaluation dataset compatible with testLib's DecisionTree.
+
+    We reuse testLib's training sample generation so the feature set is numeric and stable.
+    """
+    from testLib.model.trainer import _build_training_samples, TrainConfig
+    from testLib.data.matches import load_matches
+    import pandas as pd
+    import numpy as np
+
+    cfg = TrainConfig(years=years)
+    root = data_root
+    matches = load_matches(root, limit_years=cfg.years or 6)
+    records = _build_training_samples(matches)
+    df = pd.DataFrame(records).dropna(axis=1, how="all")
+    feature_df = df.select_dtypes(include=[np.number]).copy()
+    y = feature_df.pop("target")
+    return feature_df, y
+
+
+# Place helpers near the top so they are easy to find.
+def _format_model_load_error(model_path: str | Path, exc: Exception) -> str:
+    """Return a user-friendly message for common pickle/joblib incompatibilities."""
+    msg = str(exc)
+    hint_lines = [
+        f"Erreur lors de l'utilisation du modèle: {model_path}",
+        f"Détail: {exc.__class__.__name__}: {msg}",
+        "",
+        "Causes fréquentes:",
+        "- Incompatibilité de versions scikit-learn/xgboost entre l'entraînement et l'exécution (pickle/joblib).",
+        "- Modèle sérialisé avec une autre version de sklearn.",
+        "",
+        "Solutions:",
+        "- Ré-entraîner et re-sauvegarder le modèle dans cet environnement.",
+        "- Ou installer la même version de scikit-learn/xgboost que celle utilisée à l'entraînement.",
+    ]
+    return "\n".join(hint_lines)
+
+
+def cmd_comparison_models(args, hub: DataHub):
+    _ = hub  # comparison currently doesn't need the DataHub
+    if evaluate_binary_prob_model is None or bootstrap_ci_diff is None:
+        print("Erreur: module `comparisonModels` introuvable.", file=sys.stderr)
         return 1
 
-    model_a = _load_model_bundle_or_exit(args.model_a)
-    model_b = _load_model_bundle_or_exit(args.model_b)
+    # Accept both the old flag names (--model-a/--model-b) and the current ones (--m1/--m2)
+    path_a = getattr(args, "model_a", None) or getattr(args, "m1")
+    path_b = getattr(args, "model_b", None) or getattr(args, "m2")
+    label_a = getattr(args, "label_a", None) or getattr(args, "l1", "model_a")
+    label_b = getattr(args, "label_b", None) or getattr(args, "l2", "model_b")
+    criterion = getattr(args, "criterion", "log_loss")
+
+    model_a = _load_model_bundle_or_exit(path_a)
+    model_b = _load_model_bundle_or_exit(path_b)
+
+    # Build evaluation set (same for both models)
+    # Note: this uses testLib's sample builder (numeric features aligned with testLib model).
+    X, y = _build_eval_xy(data_root=args.data_root, years=6)
+
+    # Some bundles may be dicts (e.g. {'model': clf, ...}); others are raw estimators.
+    est_a = model_a.get("model") if isinstance(model_a, dict) and "model" in model_a else model_a
+    est_b = model_b.get("model") if isinstance(model_b, dict) and "model" in model_b else model_b
+
+    from sklearn.metrics import log_loss
+    import numpy as np
+
+    def _expected_feature_names(estimator):
+        """Best-effort extraction of expected feature names for sklearn estimators/pipelines."""
+        # Direct estimator
+        names = getattr(estimator, "feature_names_in_", None)
+        if names is not None:
+            return list(names)
+
+        # Pipelines: try final estimator
+        if hasattr(estimator, "steps"):
+            try:
+                final_est = estimator.steps[-1][1]
+                names = getattr(final_est, "feature_names_in_", None)
+                if names is not None:
+                    return list(names)
+            except Exception:
+                pass
+
+            # Otherwise try any step
+            for _, step in getattr(estimator, "steps", []):
+                names = getattr(step, "feature_names_in_", None)
+                if names is not None:
+                    return list(names)
+
+        return None
+
+    def _align_X_for_estimator(estimator, X):
+        expected = _expected_feature_names(estimator)
+        if expected is None:
+            return X
+        X2 = X.reindex(columns=expected)
+        return X2.fillna(0.0)
 
     try:
-        result = compare_models(
-            model_a=model_a,
-            model_b=model_b,
-            labels=(args.label_a, args.label_b),
-            report_out=Path(args.report_out) if args.report_out else None,
-        )
-    except TypeError:
-        result = compare_models(model_a, model_b)
+        p_a = _predict_proba_from_joblib_model(est_a, _align_X_for_estimator(est_a, X))
+    except Exception as exc:
+        print(_format_model_load_error(path_a, exc), file=sys.stderr)
+        return 2
 
-    if isinstance(result, dict):
-        print("Comparison result:")
-        for k, v in result.items():
-            print(f"  {k}: {v}")
-    elif result is not None:
-        print(result)
+    try:
+        p_b = _predict_proba_from_joblib_model(est_b, _align_X_for_estimator(est_b, X))
+    except Exception as exc:
+        print(_format_model_load_error(path_b, exc), file=sys.stderr)
+        return 2
+
+    m_a = evaluate_binary_prob_model(y, p_a)
+    m_b = evaluate_binary_prob_model(y, p_b)
+
+    # Bootstrap diff on logloss. Use labels=[0,1] to handle resamples with a single class.
+    ci_lo, ci_hi, mean_diff = bootstrap_ci_diff(
+        y,
+        p_a,
+        p_b,
+        metric_fn=lambda yy, pp: log_loss(yy, np.clip(pp, 1e-15, 1 - 1e-15), labels=[0, 1]),
+        n_boot=2000,
+        seed=42,
+    )
+
+    # Decide winner according to criterion
+    higher_is_better = {"accuracy", "auc"}
+    if criterion not in {"log_loss", "brier", "accuracy", "auc"}:
+        print(f"Critère inconnu: {criterion}. Choisissez parmi: log_loss, brier, accuracy, auc", file=sys.stderr)
+        return 2
+
+    a_val = float(m_a.get(criterion, float("nan")))
+    b_val = float(m_b.get(criterion, float("nan")))
+    if criterion in higher_is_better:
+        winner = label_a if a_val > b_val else label_b
+        direction = "plus grand"
+    else:
+        winner = label_a if a_val < b_val else label_b
+        direction = "plus petit"
+
+    report = {
+        "criterion": criterion,
+        "winner": winner,
+        "model1": {"label": label_a, "path": str(path_a), "metrics": m_a},
+        "model2": {"label": label_b, "path": str(path_b), "metrics": m_b},
+        "log_loss_diff_mean": mean_diff,
+        "log_loss_diff_ci95": [ci_lo, ci_hi],
+        "n": int(len(y)),
+    }
+
+    # Save optional report
+    if args.report_out:
+        import json
+
+        out = Path(args.report_out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(report, indent=2), encoding="utf-8")
+
+    # Clear, human-friendly output
+    def _fmt(x):
+        try:
+            return f"{float(x):.4f}" if x == x else "nan"
+        except Exception:
+            return "nan"
+
+    print("\n=== Model comparison ===")
+    print(f"Dataset size: n={report['n']}")
+    print(f"Chosen criterion: {criterion} ({direction} = meilleur)")
+    print("\nMetrics:")
+    print(f"  {label_a:>12} | log_loss={_fmt(m_a.get('log_loss'))} brier={_fmt(m_a.get('brier'))} acc={_fmt(m_a.get('accuracy'))} auc={_fmt(m_a.get('auc'))}")
+    print(f"  {label_b:>12} | log_loss={_fmt(m_b.get('log_loss'))} brier={_fmt(m_b.get('brier'))} acc={_fmt(m_b.get('accuracy'))} auc={_fmt(m_b.get('auc'))}")
+
+    print("\nVerdict:")
+    print(f"  Winner: {winner} (meilleur {criterion}: {label_a}={_fmt(a_val)} vs {label_b}={_fmt(b_val)})")
+    print("\nLog-loss robustness (bootstrap):")
+    print(f"  diff (model1-model2) mean={_fmt(mean_diff)}  CI95=[{_fmt(ci_lo)}, { _fmt(ci_hi)}]")
+
+    if args.report_out:
+        print(f"\nReport written to: {args.report_out}")
+
     return 0
 
 
@@ -261,8 +429,14 @@ def build_parser():
     ap_cmp = sp.add_parser("comparison", help="Comparez deux modèles formés")
     ap_cmp.add_argument("--m1", required=True, help="Chemin vers le premier bundle de modèles")
     ap_cmp.add_argument("--m2", required=True, help="Chemin vers le second bundle de modèles")
-    ap_cmp.add_argument("--l1", default="model_a", help="Nom d'affichage du modèle A")
-    ap_cmp.add_argument("--l2", default="model_b", help="Nom d'affichage du modèle B")
+    ap_cmp.add_argument("--l1", "-l1", default="model_a", help="Nom d'affichage du modèle A")
+    ap_cmp.add_argument("--l2", "-l2", default="model_b", help="Nom d'affichage du modèle B")
+    ap_cmp.add_argument(
+        "--criterion",
+        choices=["log_loss", "brier", "accuracy", "auc"],
+        default="log_loss",
+        help="Critère principal pour décider du gagnant (défaut: log_loss)",
+    )
     ap_cmp.add_argument("--report-out", help="Chemin optionnel pour rédiger un rapport de comparaison")
     ap_cmp.set_defaults(func=cmd_comparison_models)
 
@@ -277,3 +451,4 @@ def main(argv=None):
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

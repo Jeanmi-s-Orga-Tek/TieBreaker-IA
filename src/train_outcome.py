@@ -307,11 +307,20 @@ def calibrate_model(
         return base_model, None
     method = "isotonic" if len(y_cal) >= 1000 else "sigmoid"
     LOGGER.info("Calibration des probabilités (%s)", method)
-    calibrator_kwargs: Dict[str, Any] = {"method": method, "cv": "prefit"}
+
+    # scikit-learn >= 1.8 removed cv='prefit'. Prefer FrozenEstimator when available.
     try:
-        calibrator = CalibratedClassifierCV(estimator=base_model, **calibrator_kwargs)
-    except TypeError:  # scikit-learn < 1.4 uses base_estimator
-        calibrator = CalibratedClassifierCV(base_estimator=base_model, **calibrator_kwargs)  # type: ignore[arg-type]
+        from sklearn.frozen import FrozenEstimator  # type: ignore
+        frozen = FrozenEstimator(base_model)
+        calibrator = CalibratedClassifierCV(estimator=frozen, method=method)
+    except Exception:
+        # Older scikit-learn: keep backwards-compatible behavior.
+        calibrator_kwargs: Dict[str, Any] = {"method": method, "cv": "prefit"}
+        try:
+            calibrator = CalibratedClassifierCV(estimator=base_model, **calibrator_kwargs)
+        except TypeError:  # scikit-learn < 1.4 uses base_estimator
+            calibrator = CalibratedClassifierCV(base_estimator=base_model, **calibrator_kwargs)  # type: ignore[arg-type]
+
     calibrator.fit(X_cal, y_cal)
     return calibrator, method
 

@@ -1,0 +1,30 @@
+{
+  "criterion": "log_loss",
+  "winner": "tuned",
+  "model1": {
+    "label": "baseline",
+    "path": "testLib/io/model.pkl",
+    "metrics": {
+      "log_loss": 2.7233676131084383,
+      "brier": 0.15627607080117598,
+      "accuracy": 0.8254156769596199,
+      "auc": 0.7201945181255526
+    }
+  },
+  "model2": {
+    "label": "tuned",
+    "path": "models/outcome_model_xgb.pkl",
+    "metrics": {
+      "log_loss": 0.6562622510809248,
+      "brier": 0.23081037318560904,
+      "accuracy": 0.7648456057007126,
+      "auc": 0.6152372531682878
+    }
+  },
+  "log_loss_diff_mean": 2.0664806717986313,
+  "log_loss_diff_ci95": [
+    1.489385153157563,
+    2.6672180321888703
+  ],
+  "n": 842
+}
