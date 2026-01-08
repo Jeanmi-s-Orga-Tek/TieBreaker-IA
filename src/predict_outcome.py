@@ -10,7 +10,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from .build_dataset import (
+from build_dataset import (
     PlayerLookup,
     add_one_hot_features,
     canonicalize_ab,
@@ -18,10 +18,10 @@ from .build_dataset import (
     prepare_players,
     prepare_rankings,
 )
-from .models import DataHub
+from models import DataHub
 
-try:  # optional recent form enrichments
-    from .features_recent import add_recent_form_features
+try:
+    from features_recent import add_recent_form_features
 except ModuleNotFoundError:  # pragma: no cover - optional dependency
     def add_recent_form_features(matches_df: pd.DataFrame, dataset: pd.DataFrame, **_: Any) -> pd.DataFrame:
         return dataset

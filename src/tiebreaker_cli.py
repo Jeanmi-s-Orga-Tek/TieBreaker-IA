@@ -5,7 +5,7 @@
 ## tiebreaker_cli
 ##
 
-from .models import DataHub
+from models import DataHub
 from testLib import (
     TrainConfig,
     latest_match_for_player,
@@ -14,7 +14,7 @@ from testLib import (
     train_model,
 )
 from testLib.data.matches import resolve_data_root
-from .predict_outcome import PredictRequest, predict_outcome
+from predict_outcome import PredictRequest, predict_outcome
 import argparse
 import sys
 import re
@@ -22,6 +22,12 @@ from pathlib import Path
 from datetime import datetime
 import pandas as pd
 from difflib import get_close_matches
+import joblib
+
+try:
+    from comparisonModels import compare_models
+except ModuleNotFoundError:
+    compare_models = None
 
 def norm(s: str) -> str:
     return re.sub(r'\s+', ' ', s.strip().casefold())
@@ -133,6 +139,43 @@ def cmd_match(args, hub: DataHub):
     print(f"Winner: {result['winner']}")
     return 0
 
+def _load_model_bundle_or_exit(path_value: str | Path):
+    path = Path(path_value)
+    if not path.exists():
+        print(f"Erreur: modèle introuvable: {path}", file=sys.stderr)
+        raise SystemExit(2)
+    try:
+        return joblib.load(path)
+    except Exception as exc:
+        print(f"Erreur: impossible de charger le modèle: {path} ({exc})", file=sys.stderr)
+        raise SystemExit(2)
+
+def cmd_comparison_models(args):
+    if compare_models is None:
+        print("Erreur: module `comparisonModels` introuvable ou ne fournit pas `compare_models`.", file=sys.stderr)
+        return 1
+
+    model_a = _load_model_bundle_or_exit(args.model_a)
+    model_b = _load_model_bundle_or_exit(args.model_b)
+
+    try:
+        result = compare_models(
+            model_a=model_a,
+            model_b=model_b,
+            labels=(args.label_a, args.label_b),
+            report_out=Path(args.report_out) if args.report_out else None,
+        )
+    except TypeError:
+        result = compare_models(model_a, model_b)
+
+    if isinstance(result, dict):
+        print("Comparison result:")
+        for k, v in result.items():
+            print(f"  {k}: {v}")
+    elif result is not None:
+        print(result)
+    return 0
+
 
 def cmd_predict(args, hub: DataHub):
     if args.date:
@@ -214,6 +257,15 @@ def build_parser():
     ap_predict.add_argument("--best-of", type=int, help="Nombre de sets gagnants (3 ou 5). Si omis, inféré")
     ap_predict.add_argument("--model-path", default="models/outcome_model_xgb.pkl", help="Chemin vers le modèle entraîné")
     ap_predict.set_defaults(func=cmd_predict)
+
+    ap_cmp = sp.add_parser("comparison", help="Comparez deux modèles formés")
+    ap_cmp.add_argument("--m1", required=True, help="Chemin vers le premier bundle de modèles")
+    ap_cmp.add_argument("--m2", required=True, help="Chemin vers le second bundle de modèles")
+    ap_cmp.add_argument("--l1", default="model_a", help="Nom d'affichage du modèle A")
+    ap_cmp.add_argument("--l2", default="model_b", help="Nom d'affichage du modèle B")
+    ap_cmp.add_argument("--report-out", help="Chemin optionnel pour rédiger un rapport de comparaison")
+    ap_cmp.set_defaults(func=cmd_comparison_models)
+
     return ap
 
 def main(argv=None):

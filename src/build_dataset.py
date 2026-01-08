@@ -12,8 +12,8 @@ from typing import Any, Mapping
 import numpy as np
 import pandas as pd
 
-from .models import DataHub
-from .features_recent import add_recent_form_features
+from models import DataHub
+from features_recent import add_recent_form_features
 
 
 @dataclass(slots=True)

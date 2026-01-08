@@ -19,8 +19,8 @@ from sklearn.metrics import brier_score_loss, log_loss, roc_auc_score
 from sklearn.pipeline import Pipeline
 
 try:
-    from xgboost import XGBClassifier  # type: ignore
-except ImportError as exc:  # pragma: no cover
+    from xgboost import XGBClassifier
+except ImportError as exc:
     raise ImportError(
         "xgboost is required for train_outcome.py. Install it via `pip install xgboost`."
     ) from exc
