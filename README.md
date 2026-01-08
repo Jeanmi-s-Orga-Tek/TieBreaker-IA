@@ -145,6 +145,40 @@ Pour plus d'informations sur une commande spécifique :
 ./TieBreaker match --help
 ```
 
+## 🔀 Comparer deux modèles
+
+Vous pouvez comparer deux bundles de modèles entraînés (fichiers `*.pkl` générés par `src/train_outcome.py`) sur le même jeu de matches de test.
+
+```bash
+# Exemple : comparer deux modèles et écrire un rapport JSON
+./TieBreaker comparison \
+  --m1 models/outcome_model_xgb_v1.pkl \
+  --m2 models/outcome_model_xgb_v2.pkl \
+  --l1 baseline \
+  --l2 tuned \
+  --report-out reports/model_comparison.json
+```
+
+Sortie typique :
+
+```
+Comparison result:
+  log_loss_diff_mean: -0.0123
+  log_loss_diff_ci95: [-0.0201, -0.0042]
+  brier_diff_mean: -0.0038
+  brier_diff_ci95: [-0.0067, -0.0011]
+  accuracy_diff_mean: 0.0040
+  accuracy_diff_ci95: [-0.0020, 0.0100]
+  auc_diff_mean: 0.0065
+  auc_diff_ci95: [0.0012, 0.0118]
+```
+
+Interprétation rapide :
+
+- `log_loss` / `brier` plus petits = meilleur ; signe négatif pour `diff` (M1 - M2) favorise le modèle 1.
+- `accuracy` / `auc` plus grands = meilleur.
+- Si l'intervalle de confiance à 95 % (`ci95`) croise 0, la différence n'est pas significative avec ce bootstrap.
+
 ## 🛠️ Développement
 
 ### Architecture du projet
