@@ -1,7 +1,16 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from Backend.homepage import router as homepage_router, ASSETS_DIR
 from fastapi.responses import HTMLResponse, Response
 
 app = FastAPI()
+app.include_router(homepage_router)
+
+app.mount(
+    "/assets",
+    StaticFiles(directory=str(ASSETS_DIR), html=False, check_dir=False),
+    name="front-assets",
+)
 
 
 @app.get("/", response_class=HTMLResponse)
