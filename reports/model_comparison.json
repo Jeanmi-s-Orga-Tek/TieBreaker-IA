@@ -1,8 +1,8 @@
 {
   "criterion": "log_loss",
-  "winner": "tuned",
+  "winner": "xgb",
   "model1": {
-    "label": "baseline",
+    "label": "forest",
     "path": "testLib/io/model.pkl",
     "metrics": {
       "log_loss": 2.7233676131084383,
@@ -12,7 +12,7 @@
     }
   },
   "model2": {
-    "label": "tuned",
+    "label": "xgb",
     "path": "models/outcome_model_xgb.pkl",
     "metrics": {
       "log_loss": 0.6562622510809248,
