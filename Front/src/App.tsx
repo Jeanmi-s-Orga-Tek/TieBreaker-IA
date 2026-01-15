@@ -1,8 +1,8 @@
 import React from "react";
-import HomePage from "./homepage";
-import "./home.css";
+import PredictionPage from "./pages/PredictionPage";
+import "./index.css";
 
 export default function App() {
-    return <HomePage />;
+    return <PredictionPage />;
 }
 
