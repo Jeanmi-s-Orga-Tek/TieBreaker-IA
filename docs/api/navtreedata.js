@@ -42,22 +42,24 @@ var NAVTREE =
         [ "Exemples pratiques", "index.html#autotoc_md13", null ],
         [ "Options globales", "index.html#autotoc_md14", null ]
       ] ],
-      [ "🛠️ Développement", "index.html#autotoc_md15", [
-        [ "Architecture du projet", "index.html#autotoc_md16", null ],
-        [ "Bonnes pratiques", "index.html#autotoc_md17", null ],
-        [ "Rebuild propre", "index.html#autotoc_md18", null ]
+      [ "🔀 Comparer deux modèles", "index.html#autotoc_md15", null ],
+      [ "🛠️ Développement", "index.html#autotoc_md16", [
+        [ "Architecture du projet", "index.html#autotoc_md17", null ],
+        [ "Bonnes pratiques", "index.html#autotoc_md18", null ],
+        [ "Rebuild propre", "index.html#autotoc_md19", null ]
       ] ],
-      [ "🤝 Contribution", "index.html#autotoc_md19", [
-        [ "Idées de contributions", "index.html#autotoc_md20", null ]
+      [ "🤝 Contribution", "index.html#autotoc_md20", [
+        [ "Idées de contributions", "index.html#autotoc_md21", null ]
       ] ],
-      [ "📄 Licence", "index.html#autotoc_md21", null ],
-      [ "🔗 Liens utiles", "index.html#autotoc_md22", null ]
+      [ "📄 Licence", "index.html#autotoc_md22", null ],
+      [ "🔗 Liens utiles", "index.html#autotoc_md23", null ]
     ] ],
     [ "Packages", "namespaces.html", [
       [ "Package List", "namespaces.html", "namespaces_dup" ],
       [ "Package Members", "namespacemembers.html", [
         [ "All", "namespacemembers.html", null ],
-        [ "Functions", "namespacemembers_func.html", null ]
+        [ "Functions", "namespacemembers_func.html", null ],
+        [ "Variables", "namespacemembers_vars.html", null ]
       ] ]
     ] ],
     [ "Classes", "annotated.html", [
@@ -77,7 +79,8 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"annotated.html"
+"____init_____8py.html",
+"namespacesrc_1_1tiebreaker__cli.html#a60a79fcc68d102bfe61d8c7b58bf70b1"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

@@ -14,6 +14,9 @@
       <a class="brand" href="#">TieBreaker AI</a>
       <nav class="nav">
         <a href="#features">Fonctionnalités</a>
+        <a href="#components">Composants</a>
+        <a href="#datasets">Données & Modèles</a>
+        <a href="#reports">Rapports</a>
         <a href="#install">Installation</a>
         <a href="#usage">Utilisation</a>
         <a class="nav-dox" href="./api/index.html" target="_blank" rel="noopener">Documentation Doxygen</a>
@@ -28,7 +31,7 @@
         <div class="hero-content">
           <h1>TieBreaker AI</h1>
           <p class="lead">Prédictions intelligentes de matchs de tennis ATP — modèles Elo par surface, données historiques complètes et une CLI simple à utiliser.</p>
-          <p class="meta">Basé sur des jeux de données ATP (1968–2024). Conçu pour être extensible et reproductible.</p>
+          <p class="meta">Pipeline complet : CLI Python, API FastAPI, front React/Vite, modèles ML et jeux de données ATP (1968–2024).</p>
           <div class="hero-actions">
             <a class="btn primary" href="#install">Installer</a>
             <a class="btn ghost" href="#features">En savoir plus</a>
@@ -67,6 +70,109 @@ pip install -r requirements.txt
           <article class="feature">
             <h3>Extensible</h3>
             <p>Base pour intégrer modèles ML et nouveaux jeux de données.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="components" class="section alt">
+      <div class="container">
+        <h2>Composants du projet</h2>
+        <p class="muted">Vue d’ensemble de tout ce qui est présent dans le dépôt.</p>
+        <div class="grid grid-3">
+          <article class="feature">
+            <h3>CLI Python</h3>
+            <p>Commandes de recherche de classements, confrontations et filtres avancés.</p>
+            <div class="pill-row">
+              <span class="pill">src/</span>
+              <a href="https://github.com/ligsow6/TieBreakAI/tree/main/src" target="_blank" rel="noopener">Voir le code</a>
+            </div>
+          </article>
+          <article class="feature">
+            <h3>Backend API</h3>
+            <p>API FastAPI avec endpoints santé, prédiction et dashboard.</p>
+            <div class="pill-row">
+              <span class="pill">Backend/</span>
+              <a href="https://github.com/ligsow6/TieBreakAI/tree/main/Backend" target="_blank" rel="noopener">Voir le code</a>
+            </div>
+          </article>
+          <article class="feature">
+            <h3>Frontend Web</h3>
+            <p>Interface React + Vite + Tailwind pour l’expérience utilisateur.</p>
+            <div class="pill-row">
+              <span class="pill">Front/</span>
+              <a href="https://github.com/ligsow6/TieBreakAI/tree/main/Front" target="_blank" rel="noopener">Voir le code</a>
+            </div>
+          </article>
+          <article class="feature">
+            <h3>Docker</h3>
+            <p>Dockerfiles pour l’app complète, le backend et le frontend.</p>
+            <div class="pill-row">
+              <span class="pill">Dockerfile</span>
+              <a href="https://github.com/ligsow6/TieBreakAI/tree/main" target="_blank" rel="noopener">Voir la racine</a>
+            </div>
+          </article>
+          <article class="feature">
+            <h3>Tests & outils</h3>
+            <p>Suite de tests, scripts de lancement et utilitaires.</p>
+            <div class="pill-row">
+              <span class="pill">testLib/</span>
+              <a href="https://github.com/ligsow6/TieBreakAI/tree/main/testLib" target="_blank" rel="noopener">Voir le code</a>
+            </div>
+          </article>
+          <article class="feature">
+            <h3>Documentation</h3>
+            <p>Documentation statique et Doxygen généré.</p>
+            <div class="pill-row">
+              <span class="pill">docs/</span>
+              <a href="./api/index.html" target="_blank" rel="noopener">Doxygen</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="datasets" class="section">
+      <div class="container">
+        <h2>Données & modèles</h2>
+        <div class="grid grid-2">
+          <article class="feature">
+            <h3>Jeux de données</h3>
+            <ul class="clean-list">
+              <li><strong>Matchs ATP</strong> (depuis 1968) — <span class="pill">data/atp_matches/</span></li>
+              <li><strong>Classements actuels</strong> — <span class="pill">data/atp_current_ranking/</span></li>
+              <li><strong>Historique de rankings</strong> — <span class="pill">data/atp_old_ranking/</span></li>
+              <li><strong>Joueurs</strong> — <span class="pill">data/atp_player/</span></li>
+            </ul>
+            <a class="link" href="https://github.com/ligsow6/TieBreakAI/tree/main/data" target="_blank" rel="noopener">Explorer les données sur GitHub</a>
+          </article>
+          <article class="feature">
+            <h3>Modèles & bundles</h3>
+            <ul class="clean-list">
+              <li>Bundles ML sérialisés : <span class="pill">models/</span></li>
+              <li>Entraînement & features : <span class="pill">src/</span></li>
+              <li>Rapports d’entraînement : <span class="pill">reports/</span></li>
+            </ul>
+            <a class="link" href="https://github.com/ligsow6/TieBreakAI/tree/main/models" target="_blank" rel="noopener">Voir les modèles sur GitHub</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="reports" class="section alt">
+      <div class="container">
+        <h2>Rapports & métriques</h2>
+        <p class="muted">Résultats d’entraînement et comparaisons de modèles (JSON).</p>
+        <div class="grid grid-2">
+          <article class="feature">
+            <h3>Rapports d’entraînement</h3>
+            <p>Plusieurs variantes XGBoost et profils de features.</p>
+            <a class="link" href="https://github.com/ligsow6/TieBreakAI/tree/main/reports" target="_blank" rel="noopener">Ouvrir le dossier reports</a>
+          </article>
+          <article class="feature">
+            <h3>Comparaison de modèles</h3>
+            <p>Rapports comparatifs (log-loss, Brier, AUC, accuracy).</p>
+            <a class="link" href="https://github.com/ligsow6/TieBreakAI/blob/main/reports/model_comparison.json" target="_blank" rel="noopener">Voir un exemple</a>
           </article>
         </div>
       </div>

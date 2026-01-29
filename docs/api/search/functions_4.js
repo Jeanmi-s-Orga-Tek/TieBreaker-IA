@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['load_5fmatches_0',['load_matches',['../classtiebreaker__cli_1_1DataHub.html#a33c8b3ca419225e0afb2506ffea3c354',1,'tiebreaker_cli::DataHub']]],
-  ['load_5fplayers_1',['load_players',['../classtiebreaker__cli_1_1DataHub.html#a68bb8c53289b8059ffb68811545f19e9',1,'tiebreaker_cli::DataHub']]],
-  ['load_5frankings_2',['load_rankings',['../classtiebreaker__cli_1_1DataHub.html#aa41347851fd85bd212b1bf588797c260',1,'tiebreaker_cli::DataHub']]]
+  ['date_5fparse_5for_5fnone_0',['date_parse_or_none',['../namespacesrc_1_1tiebreaker__cli.html#a60a79fcc68d102bfe61d8c7b58bf70b1',1,'src::tiebreaker_cli']]],
+  ['describe_5fdataframe_1',['describe_dataframe',['../namespacesrc_1_1build__dataset.html#a778cda3570b9337c2d5a1d5e284b7dbf',1,'src::build_dataset']]]
 ];

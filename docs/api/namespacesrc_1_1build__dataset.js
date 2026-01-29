@@ -1,0 +1,27 @@
+var namespacesrc_1_1build__dataset =
+[
+    [ "PlayerLookup", "classsrc_1_1build__dataset_1_1PlayerLookup.html", "classsrc_1_1build__dataset_1_1PlayerLookup" ],
+    [ "_build_ranking_cache", "namespacesrc_1_1build__dataset.html#a3ec095ae8e54a7d44ea5b611bb91ced6", null ],
+    [ "_get_ranking_cache", "namespacesrc_1_1build__dataset.html#a749851cd9c0893fd71364393d08f1ef4", null ],
+    [ "_name_variants", "namespacesrc_1_1build__dataset.html#a6e651ba229ac9338b5c881e68c0b3e67", null ],
+    [ "_resolve_player_dob", "namespacesrc_1_1build__dataset.html#a2a97b2c72820149bfdf1eadc0332234d", null ],
+    [ "_resolve_player_name", "namespacesrc_1_1build__dataset.html#a9f2d6ed02f77dd053682fe2b9ae77550", null ],
+    [ "_safe_int", "namespacesrc_1_1build__dataset.html#a8a2b6f89c6bf73578a61a5096905073a", null ],
+    [ "_select_latest_before", "namespacesrc_1_1build__dataset.html#ac876c72ca7e8ecae480d88d6206696f7", null ],
+    [ "add_derived_features", "namespacesrc_1_1build__dataset.html#abae2343b589b4240e2ccdb6d52b0dc5d", null ],
+    [ "add_one_hot_features", "namespacesrc_1_1build__dataset.html#a730600e3f0cccdda524fb323b49b79df", null ],
+    [ "build_dataset", "namespacesrc_1_1build__dataset.html#af97d9dbf0564bb5f9df5b590b9d4a801", null ],
+    [ "build_parser", "namespacesrc_1_1build__dataset.html#a41ffeffada997dbd7ca5c37dca71d665", null ],
+    [ "canonicalize_ab", "namespacesrc_1_1build__dataset.html#aaca54296e0b33e26a3209f4df0b31b9c", null ],
+    [ "compute_age", "namespacesrc_1_1build__dataset.html#a499654528a7963f7ce7a3ae6919c540f", null ],
+    [ "describe_dataframe", "namespacesrc_1_1build__dataset.html#a778cda3570b9337c2d5a1d5e284b7dbf", null ],
+    [ "get_rank_on_or_before", "namespacesrc_1_1build__dataset.html#a152e670d9eb1b48ddb7160e48d90ad6e", null ],
+    [ "main", "namespacesrc_1_1build__dataset.html#afd72ddd4f6512f34cb23164d1b332c21", null ],
+    [ "normalize_name", "namespacesrc_1_1build__dataset.html#a355c2cf03f49001a4127c1909511142b", null ],
+    [ "parse_date_like", "namespacesrc_1_1build__dataset.html#ac65be995a734653a1ecd7764987b657c", null ],
+    [ "parse_dob_value", "namespacesrc_1_1build__dataset.html#a77c2932a5bb0d2bde618f1adb4f7223a", null ],
+    [ "prepare_players", "namespacesrc_1_1build__dataset.html#aec333c518efaddc6e60a1b1d6f7bd1e0", null ],
+    [ "prepare_rankings", "namespacesrc_1_1build__dataset.html#a072f41b083a391ca35fc80835c8017a9", null ],
+    [ "run", "namespacesrc_1_1build__dataset.html#a0dba4de211614f73abe9c83f574c2f5a", null ],
+    [ "save_dataset", "namespacesrc_1_1build__dataset.html#aebdfbd5cb2fe0c6ad47c04d927084c4d", null ]
+];

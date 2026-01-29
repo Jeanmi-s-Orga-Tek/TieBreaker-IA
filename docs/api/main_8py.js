@@ -1,7 +1,7 @@
 var main_8py =
 [
-    [ "cmd_build", "main_8py.html#a22568c18f4721023136d590b67c8753b", null ],
-    [ "cmd_clean", "main_8py.html#a4c4c5eced94eb6bcb27708d18b43d5eb", null ],
-    [ "main", "main_8py.html#af0db1d0c99ec0b4b64bcf341b69bee1a", null ],
-    [ "make_launcher", "main_8py.html#aa46881fa5c75e4afad875ee4e81207c5", null ]
+    [ "cmd_build", "main_8py.html#a7f3c538ea8052b35f6c30eee38cdaf01", null ],
+    [ "cmd_clean", "main_8py.html#ae072570f335cd9bd48d8a3b2ff4b35a0", null ],
+    [ "main", "main_8py.html#a2de213ee54a73037623cc7175ead45fb", null ],
+    [ "make_launcher", "main_8py.html#a8b301f335ca2cad31bca318da7f4c675", null ]
 ];

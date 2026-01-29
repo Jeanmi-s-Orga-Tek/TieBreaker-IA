@@ -1,0 +1,10 @@
+<map id="src.predict_outcome._resolve_best_of" name="src.predict_outcome._resolve_best_of">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,72,149,115"/>
+<area shape="rect" id="Node000002" href="$namespacesrc_1_1predict__outcome.html#a9d764280f79b43e98849d52863b8905b" title=" " alt="" coords="222,5,365,48"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="148,69,206,51,208,56,149,74"/>
+<area shape="rect" id="Node000003" href="$namespacesrc_1_1predict__outcome.html#a3ce9a1a9e05e00b17b2e9a5ff9c5341a" title=" " alt="" coords="197,72,390,115"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="149,91,181,91,181,96,149,96"/>
+<area shape="rect" id="Node000004" href="$namespacesrc_1_1predict__outcome.html#ad79bbc7abab53776a5a2b3dc4ae19169" title=" " alt="" coords="438,101,581,144"/>
+<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="145,113,197,124,255,130,314,131,422,128,422,133,314,137,255,135,196,129,143,118"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="391,104,423,108,423,114,390,109"/>
+</map>
