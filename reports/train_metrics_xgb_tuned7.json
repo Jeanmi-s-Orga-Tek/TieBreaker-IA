@@ -1,0 +1,43 @@
+{
+  "train": {
+    "auc": 0.6736691177961989,
+    "logloss": 0.586369768569422,
+    "brier": 0.2027224425719274,
+    "n": 876111
+  },
+  "val": {
+    "auc": 0.646450315378506,
+    "logloss": 0.6136596926126928,
+    "brier": 0.21277596707963542,
+    "n": 31275
+  },
+  "test": {
+    "auc": 0.6429724656962639,
+    "logloss": 0.6066502774975432,
+    "brier": 0.21000458664817404,
+    "n": 32689
+  },
+  "config": {
+    "train_end_year": 2022,
+    "val_end_year": 2023,
+    "n_features": 43,
+    "model_type": "xgboost",
+    "calibration_method": null,
+    "split_strategy": "year",
+    "auto_bounds": true,
+    "recency_half_life": null,
+    "xgb_params": {
+      "max_depth": 4,
+      "min_child_weight": 2,
+      "subsample": 0.9,
+      "colsample_bytree": 0.9,
+      "n_estimators": 800,
+      "learning_rate": 0.05,
+      "reg_lambda": 1.0,
+      "gamma": 0.0,
+      "reg_alpha": 0.0
+    },
+    "calibration": "none",
+    "player_features": false
+  }
+}

@@ -1,7 +1,7 @@
 """One-off outcome prediction utilities for TieBreaker."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from difflib import get_close_matches
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -10,21 +10,39 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from build_dataset import (
-    PlayerLookup,
-    add_one_hot_features,
-    canonicalize_ab,
-    normalize_name,
-    prepare_players,
-    prepare_rankings,
-)
-from models import DataHub
+try:
+    from .build_dataset import (
+        PlayerLookup,
+        add_derived_features,
+        add_one_hot_features,
+        canonicalize_ab,
+        normalize_name,
+        prepare_players,
+        prepare_rankings,
+    )
+    from .models import DataHub
+except ImportError:  # pragma: no cover - allow running via src on sys.path
+    from build_dataset import (
+        PlayerLookup,
+        add_derived_features,
+        add_one_hot_features,
+        canonicalize_ab,
+        normalize_name,
+        prepare_players,
+        prepare_rankings,
+    )
+    from models import DataHub
 
 try:
-    from features_recent import add_recent_form_features
-except ModuleNotFoundError:  # pragma: no cover - optional dependency
-    def add_recent_form_features(matches_df: pd.DataFrame, dataset: pd.DataFrame, **_: Any) -> pd.DataFrame:
-        return dataset
+    from .features_recent import add_recent_form_features, RECENT_FEATURE_MAP
+except ModuleNotFoundError:
+    try:
+        from features_recent import add_recent_form_features, RECENT_FEATURE_MAP
+    except ModuleNotFoundError:  # pragma: no cover - optional dependency
+        RECENT_FEATURE_MAP = {}
+
+        def add_recent_form_features(matches_df: pd.DataFrame, dataset: pd.DataFrame, **_: Any) -> pd.DataFrame:
+            return dataset
 
 
 @dataclass(slots=True)
@@ -69,23 +87,39 @@ def predict_outcome(req: PredictRequest) -> PredictResult:
     p1_id, p1_resolved = _resolve_player(players_df, req.p1_name)
     p2_id, p2_resolved = _resolve_player(players_df, req.p2_name)
 
+    recent_feature_cols = {"recent_form_missing_A", "recent_form_missing_B", *RECENT_FEATURE_MAP.values()}
+    needs_recent_form = any(col in feature_cols for col in recent_feature_cols)
+
+    matches_df = None
+    if needs_recent_form or req.best_of is None:
+        matches_df = _load_matches_for_prediction(hub, target_date, {p1_id, p2_id})
+
+    best_of_value, best_of_source = _resolve_best_of(
+        req,
+        matches_df if matches_df is not None else pd.DataFrame(),
+        p1_resolved,
+        p2_resolved,
+        target_date,
+    )
+    req_features = replace(req, best_of=best_of_value)
+
     base_row = _build_base_feature_row(
         p1_id,
         p1_resolved,
         p2_id,
         p2_resolved,
         target_date,
-        req,
+        req_features,
         rankings_df,
         lookup,
     )
     dataset = pd.DataFrame([base_row])
     dataset = add_one_hot_features(dataset)
+    dataset = add_derived_features(dataset)
 
-    matches_df = hub.load_matches().copy()
-    matches_df["tourney_date"] = pd.to_datetime(matches_df["tourney_date"], errors="coerce")
-    matches_df = matches_df[matches_df["tourney_date"] < target_date]
-    dataset = add_recent_form_features(matches_df, dataset)
+    if needs_recent_form and matches_df is not None:
+        matches_history = matches_df[matches_df["tourney_date"] < target_date]
+        dataset = add_recent_form_features(matches_history, dataset)
 
     dataset = dataset.fillna(np.nan)
     row_values = dataset.iloc[0]
@@ -118,6 +152,7 @@ def predict_outcome(req: PredictRequest) -> PredictResult:
         "surface": row_values.get("surface"),
         "round": row_values.get("round"),
         "best_of": row_values.get("best_of"),
+        "best_of_source": best_of_source,
         "p1_resolved": p1_resolved,
         "p2_resolved": p2_resolved,
     }
@@ -160,6 +195,123 @@ def _resolve_player(players_df: pd.DataFrame, query: str) -> tuple[int, str]:
     if pd.isna(player_id):
         raise ValueError(f"Identifiant joueur manquant pour {row['full_name']}")
     return int(player_id), str(row["full_name"])
+
+
+def _filter_matches_for_players(matches_df: pd.DataFrame, player_ids: set[int]) -> pd.DataFrame:
+    if matches_df.empty or not player_ids:
+        return matches_df
+    if "winner_id" not in matches_df.columns or "loser_id" not in matches_df.columns:
+        return matches_df
+    filtered = matches_df.copy()
+    filtered["winner_id"] = pd.to_numeric(filtered["winner_id"], errors="coerce")
+    filtered["loser_id"] = pd.to_numeric(filtered["loser_id"], errors="coerce")
+    mask = filtered["winner_id"].isin(player_ids) | filtered["loser_id"].isin(player_ids)
+    return filtered[mask].reset_index(drop=True)
+
+
+def _load_matches_for_prediction(
+    hub: DataHub,
+    target_date: pd.Timestamp,
+    player_ids: set[int],
+    window_years: int = 5,
+) -> pd.DataFrame:
+    if isinstance(target_date, pd.Timestamp) and pd.notna(target_date):
+        end_year = int(target_date.year)
+        start_year = end_year - max(window_years - 1, 0)
+        years = list(range(start_year, end_year + 1))
+        matches_df = hub.load_matches(years=years).copy()
+    else:
+        matches_df = hub.load_matches().copy()
+    matches_df["tourney_date"] = pd.to_datetime(matches_df["tourney_date"], errors="coerce")
+    return _filter_matches_for_players(matches_df, player_ids)
+
+
+def _safe_int(value: Any) -> Optional[int]:
+    try:
+        if pd.isna(value):
+            return None
+    except TypeError:
+        pass
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _default_best_of(req: PredictRequest) -> int:
+    level = str(req.tourney_level or "").strip().upper()
+    if level == "G":
+        return 5
+    name = str(req.tourney_name or "").strip().casefold()
+    for slam in ("wimbledon", "roland garros", "us open", "australian open"):
+        if slam in name:
+            return 5
+    return 3
+
+
+def _infer_best_of_from_matches(
+    matches_df: pd.DataFrame,
+    p1_name: str,
+    p2_name: str,
+    target_date: pd.Timestamp,
+    surface: Optional[str],
+    round_value: Optional[str],
+) -> Optional[int]:
+    if matches_df.empty or pd.isna(target_date):
+        return None
+    if "tourney_date" not in matches_df.columns:
+        return None
+    if "winner_name" not in matches_df.columns or "loser_name" not in matches_df.columns:
+        return None
+
+    target_date = pd.to_datetime(target_date).normalize()
+    start = target_date - pd.Timedelta(days=21)
+    end = target_date + pd.Timedelta(days=1)
+    candidates = matches_df[matches_df["tourney_date"].between(start, end)]
+    if candidates.empty:
+        return None
+
+    p1_key = normalize_name(p1_name)
+    p2_key = normalize_name(p2_name)
+    winner_key = candidates["winner_name"].astype(str).map(normalize_name)
+    loser_key = candidates["loser_name"].astype(str).map(normalize_name)
+    player_mask = ((winner_key == p1_key) & (loser_key == p2_key)) | ((winner_key == p2_key) & (loser_key == p1_key))
+    candidates = candidates[player_mask]
+    if candidates.empty:
+        return None
+
+    if round_value and "round" in candidates.columns:
+        round_norm = str(round_value).strip().upper()
+        round_filtered = candidates[candidates["round"].astype(str).str.strip().str.upper() == round_norm]
+        if not round_filtered.empty:
+            candidates = round_filtered
+
+    if surface and "surface" in candidates.columns:
+        surface_norm = str(surface).strip().title()
+        surface_filtered = candidates[candidates["surface"].astype(str).str.strip().str.title() == surface_norm]
+        if not surface_filtered.empty:
+            candidates = surface_filtered
+
+    candidates = candidates.copy()
+    candidates["__date_delta"] = (candidates["tourney_date"] - target_date).abs()
+    candidates = candidates.sort_values(["__date_delta"])
+    return _safe_int(candidates.iloc[0].get("best_of"))
+
+
+def _resolve_best_of(
+    req: PredictRequest,
+    matches_df: pd.DataFrame,
+    p1_name: str,
+    p2_name: str,
+    target_date: pd.Timestamp,
+) -> tuple[int, str]:
+    direct = _safe_int(req.best_of)
+    if direct is not None:
+        return direct, "provided"
+    inferred = _infer_best_of_from_matches(matches_df, p1_name, p2_name, target_date, req.surface, req.round)
+    if inferred is not None:
+        return inferred, "match_lookup"
+    return _default_best_of(req), "default"
 
 
 def _build_base_feature_row(

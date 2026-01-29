@@ -12,8 +12,12 @@ from typing import Any, Mapping
 import numpy as np
 import pandas as pd
 
-from models import DataHub
-from features_recent import add_recent_form_features
+try:
+    from .models import DataHub
+    from .features_recent import add_recent_form_features
+except ImportError:  # pragma: no cover - allow running via src on sys.path
+    from models import DataHub
+    from features_recent import add_recent_form_features
 
 
 @dataclass(slots=True)
@@ -22,6 +26,10 @@ class PlayerLookup:
     dob_by_name: dict[str, pd.Timestamp]
     name_by_id: dict[int, str]
     name_by_key: dict[str, str]
+    height_by_id: dict[int, float]
+    height_by_name: dict[str, float]
+    hand_by_id: dict[int, str]
+    hand_by_name: dict[str, str]
 
 
 _RANKING_CACHE: dict[int, dict[str, Any]] = {}
@@ -204,21 +212,45 @@ def prepare_players(players: pd.DataFrame) -> tuple[pd.DataFrame, PlayerLookup]:
     dob_by_name: dict[str, pd.Timestamp] = {}
     name_by_id: dict[int, str] = {}
     name_by_key: dict[str, str] = {}
+    height_by_id: dict[int, float] = {}
+    height_by_name: dict[str, float] = {}
+    hand_by_id: dict[int, str] = {}
+    hand_by_name: dict[str, str] = {}
     for _, row in df.iterrows():
         pid = row.get("player_id")
         full_name = row.get("full_name")
         name_key = row.get("name_key")
         dob_value = row.get("dob_parsed")
+        height_value = pd.to_numeric(row.get("height"), errors="coerce")
+        hand_value = str(row.get("hand") or "").strip().upper()
+        hand_value = hand_value[:1] if hand_value else ""
         if pd.notna(pid):
             pid_int = int(pid)
             name_by_id[pid_int] = str(full_name) if full_name else ""
             if pd.notna(dob_value):
                 dob_by_id[pid_int] = pd.Timestamp(dob_value)
+            if pd.notna(height_value):
+                height_by_id[pid_int] = float(height_value)
+            if hand_value in {"L", "R"}:
+                hand_by_id[pid_int] = hand_value
         if isinstance(name_key, str) and name_key:
             name_by_key[name_key] = str(full_name) if full_name else ""
             if pd.notna(dob_value):
                 dob_by_name[name_key] = pd.Timestamp(dob_value)
-    lookup = PlayerLookup(dob_by_id=dob_by_id, dob_by_name=dob_by_name, name_by_id=name_by_id, name_by_key=name_by_key)
+            if pd.notna(height_value):
+                height_by_name[name_key] = float(height_value)
+            if hand_value in {"L", "R"}:
+                hand_by_name[name_key] = hand_value
+    lookup = PlayerLookup(
+        dob_by_id=dob_by_id,
+        dob_by_name=dob_by_name,
+        name_by_id=name_by_id,
+        name_by_key=name_by_key,
+        height_by_id=height_by_id,
+        height_by_name=height_by_name,
+        hand_by_id=hand_by_id,
+        hand_by_name=hand_by_name,
+    )
     return df, lookup
 
 
@@ -234,6 +266,20 @@ def _resolve_player_dob(player_name: str, player_id: int | None, lookup: PlayerL
         return lookup.dob_by_id[player_id]
     name_key = normalize_name(player_name)
     return lookup.dob_by_name.get(name_key)
+
+
+def _resolve_player_height(player_name: str, player_id: int | None, lookup: PlayerLookup) -> float | None:
+    if player_id is not None and player_id in lookup.height_by_id:
+        return lookup.height_by_id[player_id]
+    name_key = normalize_name(player_name)
+    return lookup.height_by_name.get(name_key)
+
+
+def _resolve_player_hand(player_name: str, player_id: int | None, lookup: PlayerLookup) -> str | None:
+    if player_id is not None and player_id in lookup.hand_by_id:
+        return lookup.hand_by_id[player_id]
+    name_key = normalize_name(player_name)
+    return lookup.hand_by_name.get(name_key)
 
 
 def compute_age(dob: pd.Timestamp | None, match_date: pd.Timestamp | None) -> float:
@@ -295,6 +341,10 @@ def canonicalize_ab(row: Mapping[str, Any], rankings: pd.DataFrame, players_look
         b_rank = loser_rank
         a_dob = _resolve_player_dob(winner_name, winner_id, players_lookup)
         b_dob = _resolve_player_dob(loser_name, loser_id, players_lookup)
+        a_height = _resolve_player_height(winner_name, winner_id, players_lookup)
+        b_height = _resolve_player_height(loser_name, loser_id, players_lookup)
+        a_hand = _resolve_player_hand(winner_name, winner_id, players_lookup)
+        b_hand = _resolve_player_hand(loser_name, loser_id, players_lookup)
         y_value = 1
     else:
         a_name = loser_display_name or loser_name
@@ -305,6 +355,10 @@ def canonicalize_ab(row: Mapping[str, Any], rankings: pd.DataFrame, players_look
         b_rank = winner_rank
         a_dob = _resolve_player_dob(loser_name, loser_id, players_lookup)
         b_dob = _resolve_player_dob(winner_name, winner_id, players_lookup)
+        a_height = _resolve_player_height(loser_name, loser_id, players_lookup)
+        b_height = _resolve_player_height(winner_name, winner_id, players_lookup)
+        a_hand = _resolve_player_hand(loser_name, loser_id, players_lookup)
+        b_hand = _resolve_player_hand(winner_name, winner_id, players_lookup)
         y_value = 0
 
     rank_a_value = a_rank.get("rank", np.nan)
@@ -314,6 +368,20 @@ def canonicalize_ab(row: Mapping[str, Any], rankings: pd.DataFrame, players_look
 
     age_a = compute_age(a_dob, match_date)
     age_b = compute_age(b_dob, match_date)
+
+    height_a = float(a_height) if a_height is not None else np.nan
+    height_b = float(b_height) if b_height is not None else np.nan
+    height_missing_a = int(pd.isna(height_a))
+    height_missing_b = int(pd.isna(height_b))
+    height_diff_value = height_a - height_b if not np.isnan(height_a) and not np.isnan(height_b) else np.nan
+
+    hand_a = a_hand if a_hand in {"L", "R"} else None
+    hand_b = b_hand if b_hand in {"L", "R"} else None
+    hand_missing_a = int(hand_a is None)
+    hand_missing_b = int(hand_b is None)
+    hand_a_left = 1 if hand_a == "L" else 0
+    hand_b_left = 1 if hand_b == "L" else 0
+    hand_same = int(hand_a is not None and hand_b is not None and hand_a == hand_b)
 
     round_raw = str(row.get("round", "")).strip().upper() or None
     surface_raw = str(row.get("surface", "")).strip().title() or None
@@ -372,6 +440,16 @@ def canonicalize_ab(row: Mapping[str, Any], rankings: pd.DataFrame, players_look
         "age_diff": age_diff_value,
         "age_missing_A": age_missing_a,
         "age_missing_B": age_missing_b,
+        "height_A": height_a,
+        "height_B": height_b,
+        "height_diff": height_diff_value,
+        "height_missing_A": height_missing_a,
+        "height_missing_B": height_missing_b,
+        "hand_A_left": hand_a_left,
+        "hand_B_left": hand_b_left,
+        "hand_same": hand_same,
+        "hand_missing_A": hand_missing_a,
+        "hand_missing_B": hand_missing_b,
         "winner_name_raw": winner_name,
         "loser_name_raw": loser_name,
     }
@@ -386,7 +464,8 @@ def build_dataset(matches: pd.DataFrame, rankings: pd.DataFrame, players_lookup:
         records.append(record)
     df = pd.DataFrame(records)
     df = add_one_hot_features(df)
-    return add_recent_form_features(matches, df)
+    df = add_recent_form_features(matches, df)
+    return add_derived_features(df)
 
 
 def add_one_hot_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -400,6 +479,65 @@ def add_one_hot_features(df: pd.DataFrame) -> pd.DataFrame:
         df[f"round_{rnd}"] = (df["round_clean"] == rnd).astype(int)
     df["round_other"] = (~df["round_clean"].isin(target_rounds) & df["round_clean"].ne("" )).astype(int)
     df = df.drop(columns=["round_clean"])
+    return df
+
+
+def add_derived_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Add lightweight numeric interactions to boost model signal."""
+    if df.empty:
+        return df
+
+    if "best_of" in df.columns:
+        best_of = pd.to_numeric(df["best_of"], errors="coerce")
+        df["best_of_5"] = (best_of >= 5).astype(int)
+
+    if "rank_A" in df.columns:
+        df["rank_A_log"] = np.log1p(df["rank_A"])
+        df["rank_A_inv"] = 1.0 / df["rank_A"].replace(0, np.nan)
+        df["rank_A_top10"] = (df["rank_A"] <= 10).astype(int)
+        df["rank_A_top20"] = (df["rank_A"] <= 20).astype(int)
+        df["rank_A_top50"] = (df["rank_A"] <= 50).astype(int)
+        df["rank_A_top100"] = (df["rank_A"] <= 100).astype(int)
+    if "rank_B" in df.columns:
+        df["rank_B_log"] = np.log1p(df["rank_B"])
+        df["rank_B_inv"] = 1.0 / df["rank_B"].replace(0, np.nan)
+        df["rank_B_top10"] = (df["rank_B"] <= 10).astype(int)
+        df["rank_B_top20"] = (df["rank_B"] <= 20).astype(int)
+        df["rank_B_top50"] = (df["rank_B"] <= 50).astype(int)
+        df["rank_B_top100"] = (df["rank_B"] <= 100).astype(int)
+    if "rank_diff" in df.columns:
+        df["rank_diff_abs"] = df["rank_diff"].abs()
+    if "rank_A" in df.columns and "rank_B" in df.columns:
+        denom = df["rank_A"].replace(0, np.nan)
+        df["rank_ratio"] = df["rank_B"] / denom
+
+    if "points_A" in df.columns:
+        df["points_A_log"] = np.log1p(df["points_A"])
+    if "points_B" in df.columns:
+        df["points_B_log"] = np.log1p(df["points_B"])
+    if "points_diff" in df.columns:
+        df["points_diff_abs"] = df["points_diff"].abs()
+    if "points_A" in df.columns and "points_B" in df.columns:
+        denom = df["points_B"].replace(0, np.nan)
+        df["points_ratio"] = df["points_A"] / denom
+
+    if "age_A" in df.columns and "age_B" in df.columns:
+        df["age_avg"] = (df["age_A"] + df["age_B"]) / 2.0
+    if "age_diff" in df.columns:
+        df["age_diff_abs"] = df["age_diff"].abs()
+
+    if "height_A" in df.columns and "height_B" in df.columns:
+        df["height_avg"] = (df["height_A"] + df["height_B"]) / 2.0
+    if "height_diff" in df.columns:
+        df["height_diff_abs"] = df["height_diff"].abs()
+
+    if "rank_missing_A" in df.columns and "rank_missing_B" in df.columns:
+        df["rank_missing_any"] = (df["rank_missing_A"].eq(1) | df["rank_missing_B"].eq(1)).astype(int)
+    if "points_missing_A" in df.columns and "points_missing_B" in df.columns:
+        df["points_missing_any"] = (df["points_missing_A"].eq(1) | df["points_missing_B"].eq(1)).astype(int)
+    if "age_missing_A" in df.columns and "age_missing_B" in df.columns:
+        df["age_missing_any"] = (df["age_missing_A"].eq(1) | df["age_missing_B"].eq(1)).astype(int)
+
     return df
 
 

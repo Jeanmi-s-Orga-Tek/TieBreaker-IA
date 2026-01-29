@@ -1,0 +1,42 @@
+{
+  "train": {
+    "auc": 0.6794276815093112,
+    "logloss": 0.5836015118516223,
+    "brier": 0.201584442270311,
+    "n": 876111
+  },
+  "val": {
+    "auc": 0.6468320786255659,
+    "logloss": 0.6134809451927692,
+    "brier": 0.21268611822196778,
+    "n": 31275
+  },
+  "test": {
+    "auc": 0.6427415761754135,
+    "logloss": 0.6067412243811627,
+    "brier": 0.21006250919968797,
+    "n": 32689
+  },
+  "config": {
+    "train_end_year": 2022,
+    "val_end_year": 2023,
+    "n_features": 43,
+    "model_type": "xgboost",
+    "calibration_method": null,
+    "split_strategy": "year",
+    "auto_bounds": true,
+    "recency_half_life": null,
+    "xgb_params": {
+      "max_depth": 5,
+      "min_child_weight": 2,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "n_estimators": 1200,
+      "learning_rate": 0.03,
+      "reg_lambda": 1.0,
+      "gamma": 0.0,
+      "reg_alpha": 0.0
+    },
+    "calibration": "none"
+  }
+}

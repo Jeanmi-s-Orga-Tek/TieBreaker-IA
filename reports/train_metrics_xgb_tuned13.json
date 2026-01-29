@@ -1,20 +1,20 @@
 {
   "train": {
-    "auc": 0.6718560927746553,
-    "logloss": 0.5910792819386586,
-    "brier": 0.2036156412338527,
+    "auc": 0.6717014187717008,
+    "logloss": 0.6384031116036749,
+    "brier": 0.2267113282321525,
     "n": 876111
   },
   "val": {
-    "auc": 0.646288010716702,
-    "logloss": 0.6134539062701637,
-    "brier": 0.21273852840966556,
+    "auc": 0.6461394552838131,
+    "logloss": 0.6582818264246485,
+    "brier": 0.23383005387963268,
     "n": 31275
   },
   "test": {
-    "auc": 0.6431030980674263,
-    "logloss": 0.6077219827354488,
-    "brier": 0.21032980595796885,
+    "auc": 0.6428069533216467,
+    "logloss": 0.6562308202872873,
+    "brier": 0.23307385724326005,
     "n": 32689
   },
   "config": {
@@ -22,7 +22,7 @@
     "val_end_year": 2023,
     "n_features": 43,
     "model_type": "xgboost",
-    "calibration_method": "sigmoid",
+    "calibration_method": null,
     "split_strategy": "year",
     "auto_bounds": true,
     "recency_half_life": null,
@@ -33,8 +33,10 @@
       "colsample_bytree": 0.8,
       "n_estimators": 600,
       "learning_rate": 0.05,
-      "reg_lambda": 1.2
+      "reg_lambda": 1.2,
+      "scale_pos_weight": 0.5
     },
-    "calibration": "sigmoid"
+    "calibration": "none",
+    "player_features": false
   }
 }
