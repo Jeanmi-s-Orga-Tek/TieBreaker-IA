@@ -4,21 +4,18 @@ Prediction API endpoints for TieBreaker
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from pathlib import Path
+from typing import Optional
 import sys
 import logging
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Add src directory to path
 src_path = Path(__file__).resolve().parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
-# Import model loader
 from Backend.model_loader import load_model_cached, is_model_loaded
 
-# Try to import prediction module
 try:
     from predict_outcome import PredictRequest, predict_outcome as _predict_outcome
     PREDICTION_AVAILABLE = True
@@ -36,6 +33,10 @@ class PredictionInput(BaseModel):
     surface: str = "Hard"
     round: str = "R32"
     tourney_level: str = ""
+    tournament: Optional[str] = None
+    date: Optional[str] = None
+    year: Optional[int] = None
+    all_years: bool = False
 
 
 class PredictionOutput(BaseModel):
@@ -51,7 +52,6 @@ def predict_outcome_cached(req):
     """
     Wrapper around predict_outcome that uses cached model
     """
-    # Use the cached model loader instead of loading every time
     import joblib
     import numpy as np
     import pandas as pd
@@ -71,14 +71,12 @@ def predict_outcome_cached(req):
         def add_recent_form_features(matches_df, dataset, **_):
             return dataset
 
-    # Load model from cache
     bundle = load_model_cached(req.model_path)
     model = bundle["model"]
     feature_cols = bundle["features"]
     train_end_year = bundle.get("train_end_year")
     val_end_year = bundle.get("val_end_year")
 
-    # Resolve target date
     target_date = req.date
     if target_date is None:
         if val_end_year:
@@ -95,7 +93,6 @@ def predict_outcome_cached(req):
     players_df, lookup = prepare_players(players_df_raw)
     rankings_df = prepare_rankings(hub.load_rankings())
 
-    # Resolve players
     from difflib import get_close_matches
 
     def _resolve_player(players_df, query):
@@ -120,7 +117,6 @@ def predict_outcome_cached(req):
     p1_id, p1_resolved = _resolve_player(players_df, req.p1_name)
     p2_id, p2_resolved = _resolve_player(players_df, req.p2_name)
 
-    # Build base feature row
     def _clean_surface(surface):
         if not surface:
             return "Hard"
@@ -190,7 +186,6 @@ def predict_outcome_cached(req):
         "p2_resolved": str(p2_resolved),
     }
 
-    # Return result as a simple object
     class PredictResult:
         pass
 
@@ -219,8 +214,13 @@ async def predict_match(input_data: PredictionInput) -> PredictionOutput:
         )
 
     try:
-        # Create prediction request
         from predict_outcome import PredictRequest
+
+        target_date = None
+        if input_data.date:
+            target_date = input_data.date
+        elif input_data.year:
+            target_date = f"{input_data.year}-12-31"
 
         req = PredictRequest(
             p1_name=input_data.player1_name,
@@ -228,14 +228,14 @@ async def predict_match(input_data: PredictionInput) -> PredictionOutput:
             surface=input_data.surface,
             round=input_data.round,
             tourney_level=input_data.tourney_level,
+            tourney_name=input_data.tournament or "Prediction",
+            date=target_date,
             data_root="data",
             model_path="models/outcome_model_xgb.pkl"
         )
 
-        # Get prediction using cached model
         result = predict_outcome_cached(req)
 
-        # Determine winner and probability
         if result.p_p1_win >= result.p_p2_win:
             winner = str(result.A_name if result.canonical_A_is_p1 else result.B_name)
             probability = float(result.p_p1_win)
@@ -243,7 +243,6 @@ async def predict_match(input_data: PredictionInput) -> PredictionOutput:
             winner = str(result.B_name if result.canonical_A_is_p1 else result.A_name)
             probability = float(result.p_p2_win)
 
-        # Calculate confidence level
         if probability >= 0.7:
             confidence = "Très élevée"
         elif probability >= 0.6:
@@ -286,6 +285,4 @@ async def model_status():
         "model_loaded": is_model_loaded(),
         "prediction_available": PREDICTION_AVAILABLE,
     }
-
-
 
