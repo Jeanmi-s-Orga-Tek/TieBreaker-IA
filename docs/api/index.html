@@ -138,19 +138,24 @@ Clonage du dépôt</h3>
 </div><!-- fragment --><h3><a class="anchor" id="autotoc_md7"></a>
 Configuration de l'environnement Python</h3>
 <p>Nous recommandons l'utilisation d'un environnement virtuel pour isoler les dépendances :</p>
-<div class="fragment"><div class="line"># Création de l&#39;environnement virtuel</div>
-<div class="line">python3 -m venv .venv</div>
+<div class="fragment"><div class="line"># Vérification de la version Python courante</div>
+<div class="line">python -V</div>
 <div class="line"> </div>
-<div class="line"># Activation de l&#39;environnement (Linux/macOS)</div>
-<div class="line">source .venv/bin/activate</div>
+<div class="line"># Installation de Python 3.12.11 avec pyenv</div>
+<div class="line">pyenv install 3.12.11</div>
 <div class="line"> </div>
-<div class="line"># Installation des dépendances</div>
-<div class="line">pip install --upgrade pip</div>
+<div class="line"># Configuration locale du projet</div>
+<div class="line">pyenv local 3.12.11</div>
+<div class="line"> </div>
+<div class="line"># Vérification de l&#39;application de la nouvelle version</div>
+<div class="line">python -V</div>
+<div class="line"> </div>
+<div class="line"># Installe toutes les dépendances Python répertoriées dans requirements.txt</div>
 <div class="line">pip install -r requirements.txt</div>
-</div><!-- fragment --><blockquote class="doxtable">
-<p>&zwj;💡 <b>Note</b> : Sur Windows, utilisez <code>.venv\Scripts\activate</code> pour activer l'environnement. </p>
-</blockquote>
-<h3><a class="anchor" id="autotoc_md8"></a>
+<div class="line"> </div>
+<div class="line"># Mise à jour de pip pour éviter les conflits</div>
+<div class="line">pip install --upgrade pip</div>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md8"></a>
 Compilation du lanceur</h3>
 <p>Avant d'utiliser la CLI, générez l'exécutable <code>./TieBreaker</code> :</p>
 <div class="fragment"><div class="line"># Génère le lanceur POSIX</div>
@@ -206,8 +211,34 @@ Options globales</h3>
 <div class="fragment"><div class="line">./TieBreaker rank --help</div>
 <div class="line">./TieBreaker match --help</div>
 </div><!-- fragment --><h2><a class="anchor" id="autotoc_md15"></a>
+🔀 Comparer deux modèles</h2>
+<p>Vous pouvez comparer deux bundles de modèles entraînés (fichiers <code>*.pkl</code> générés par <code><a class="el" href="train__outcome_8py.html">src/train_outcome.py</a></code>) sur le même jeu de matches de test.</p>
+<div class="fragment"><div class="line"># Exemple : comparer deux modèles et écrire un rapport JSON</div>
+<div class="line">./TieBreaker comparison \</div>
+<div class="line">  --m1 models/outcome_model_xgb_v1.pkl \</div>
+<div class="line">  --m2 models/outcome_model_xgb_v2.pkl \</div>
+<div class="line">  --l1 baseline \</div>
+<div class="line">  --l2 tuned \</div>
+<div class="line">  --report-out reports/model_comparison.json</div>
+</div><!-- fragment --><p>Sortie typique :</p>
+<div class="fragment"><div class="line">Comparison result:</div>
+<div class="line">  log_loss_diff_mean: -0.0123</div>
+<div class="line">  log_loss_diff_ci95: [-0.0201, -0.0042]</div>
+<div class="line">  brier_diff_mean: -0.0038</div>
+<div class="line">  brier_diff_ci95: [-0.0067, -0.0011]</div>
+<div class="line">  accuracy_diff_mean: 0.0040</div>
+<div class="line">  accuracy_diff_ci95: [-0.0020, 0.0100]</div>
+<div class="line">  auc_diff_mean: 0.0065</div>
+<div class="line">  auc_diff_ci95: [0.0012, 0.0118]</div>
+</div><!-- fragment --><p>Interprétation rapide :</p>
+<ul>
+<li><code>log_loss</code> / <code>brier</code> plus petits = meilleur ; signe négatif pour <code>diff</code> (M1 - M2) favorise le modèle 1.</li>
+<li><code>accuracy</code> / <code>auc</code> plus grands = meilleur.</li>
+<li>Si l'intervalle de confiance à 95 % (<code>ci95</code>) croise 0, la différence n'est pas significative avec ce bootstrap.</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md16"></a>
 🛠️ Développement</h2>
-<h3><a class="anchor" id="autotoc_md16"></a>
+<h3><a class="anchor" id="autotoc_md17"></a>
 Architecture du projet</h3>
 <div class="fragment"><div class="line">TieBreakAI/</div>
 <div class="line">├── data/              # Jeux de données ATP (matchs, classements, joueurs)</div>
@@ -217,7 +248,7 @@ Architecture du projet</h3>
 <div class="line">│   └── tiebreaker_cli.py  # Logique principale de la CLI</div>
 <div class="line">├── models/            # Futurs modèles ML</div>
 <div class="line">└── requirements.txt   # Dépendances Python</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md17"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md18"></a>
 Bonnes pratiques</h3>
 <ul>
 <li><b>Environnement virtuel</b> : activez-le avant chaque session (<code>source .venv/bin/activate</code>)</li>
@@ -225,12 +256,12 @@ Bonnes pratiques</h3>
 <li><b>Code propre</b> : respectez les conventions Python (PEP 8)</li>
 <li><b>Documentation</b> : commentez les fonctions complexes</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md18"></a>
+<h3><a class="anchor" id="autotoc_md19"></a>
 Rebuild propre</h3>
 <p>Pour repartir d'une base propre :</p>
 <div class="fragment"><div class="line">./executable/clean   # Supprime le lanceur</div>
 <div class="line">./executable/build   # Régénère le lanceur</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md19"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md20"></a>
 🤝 Contribution</h2>
 <p>Les contributions sont les bienvenues ! Voici comment participer :</p>
 <ol type="1">
@@ -240,7 +271,7 @@ Rebuild propre</h3>
 <li><code>📤 **Pushez** vers la branche (</code>git push origin feature/amazing-feature`)</li>
 <li>🔃 <b>Ouvrez</b> une Pull Request</li>
 </ol>
-<h3><a class="anchor" id="autotoc_md20"></a>
+<h3><a class="anchor" id="autotoc_md21"></a>
 Idées de contributions</h3>
 <ul>
 <li>🎯 Amélioration des modèles de prédiction (Elo, ML)</li>
@@ -249,10 +280,10 @@ Idées de contributions</h3>
 <li>🖥️ Interface graphique (GUI) ou application web</li>
 <li>📝 Documentation et tutoriels</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md21"></a>
+<h2><a class="anchor" id="autotoc_md22"></a>
 📄 Licence</h2>
 <p>Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.</p>
-<h2><a class="anchor" id="autotoc_md22"></a>
+<h2><a class="anchor" id="autotoc_md23"></a>
 🔗 Liens utiles</h2>
 <div align="center"></div><div align="center"><a href="https://discord.gg/DDPu5Vdk"><img src="https://img.shields.io/badge/Discord-Rejoindre-5865F2?style=for-the-badge&amp;logo=discord&amp;logoColor=white" alt="Discord" class="inline"/></a> <a href="https://github.com/ligsow6/TieBreakAI"><img src="https://img.shields.io/badge/GitHub-Repo-181717?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="GitHub" class="inline"/></a> <a href="https://github.com/ligsow6/TieBreakAI/issues"><img src="https://img.shields.io/badge/Issues-Signaler-red?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="Issues" class="inline"/></a></div><div align="center"></div><hr  />
 <div align="center"></div><div align="center"><b>Développé avec 🎾 par la communauté TieBreaker AI</b></div><div align="center"></div> </div></div><!-- PageDoc -->

@@ -1,6 +1,19 @@
 var searchData=
 [
-  ['tiebreaker_20ai_0',['TieBreaker AI',['../index.html#autotoc_md0',1,'🎾 TieBreaker AI'],['../index.html',1,'TieBreaker AI']]],
-  ['tiebreaker_5fcli_1',['tiebreaker_cli',['../namespacetiebreaker__cli.html',1,'']]],
-  ['tiebreaker_5fcli_2epy_2',['tiebreaker_cli.py',['../tiebreaker__cli_8py.html',1,'']]]
+  ['save_5fdataset_0',['save_dataset',['../namespacesrc_1_1build__dataset.html#aebdfbd5cb2fe0c6ad47c04d927084c4d',1,'src::build_dataset']]],
+  ['save_5fmetrics_1',['save_metrics',['../namespacesrc_1_1train__outcome.html#a8ee476441df3ae5a433127bec2379a29',1,'src::train_outcome']]],
+  ['save_5fmodel_2',['save_model',['../namespacesrc_1_1train__outcome.html#a1e8a5bd1a3398ca9c6df22bd11e28542',1,'src::train_outcome']]],
+  ['splitconfig_3',['SplitConfig',['../classsrc_1_1train__outcome_1_1SplitConfig.html',1,'src::train_outcome']]],
+  ['src_4',['src',['../namespacesrc.html',1,'']]],
+  ['src_3a_3abuild_5fdataset_5',['build_dataset',['../namespacesrc_1_1build__dataset.html',1,'src']]],
+  ['src_3a_3acomparisonmodels_6',['comparisonModels',['../namespacesrc_1_1comparisonModels.html',1,'src']]],
+  ['src_3a_3adata_7',['data',['../namespacesrc_1_1data.html',1,'src']]],
+  ['src_3a_3afeatures_5frecent_8',['features_recent',['../namespacesrc_1_1features__recent.html',1,'src']]],
+  ['src_3a_3amain_9',['main',['../namespacesrc_1_1main.html',1,'src']]],
+  ['src_3a_3amodels_10',['models',['../namespacesrc_1_1models.html',1,'src']]],
+  ['src_3a_3aparser_11',['parser',['../namespacesrc_1_1parser.html',1,'src']]],
+  ['src_3a_3apredict_5foutcome_12',['predict_outcome',['../namespacesrc_1_1predict__outcome.html',1,'src']]],
+  ['src_3a_3atiebreaker_5fcli_13',['tiebreaker_cli',['../namespacesrc_1_1tiebreaker__cli.html',1,'src']]],
+  ['src_3a_3atrain_5foutcome_14',['train_outcome',['../namespacesrc_1_1train__outcome.html',1,'src']]],
+  ['surface_15',['surface',['../classsrc_1_1predict__outcome_1_1PredictRequest.html#a3e0842d61ade9cdf3419ba59a61f7ebe',1,'src::predict_outcome::PredictRequest']]]
 ];
