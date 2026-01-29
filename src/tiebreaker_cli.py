@@ -5,7 +5,13 @@
 ## tiebreaker_cli
 ##
 
-from models import DataHub
+try:
+    from .models import DataHub
+    from .predict_outcome import PredictRequest, predict_outcome
+except ImportError:  # pragma: no cover - allow running via src on sys.path
+    from models import DataHub
+    from predict_outcome import PredictRequest, predict_outcome
+
 from testLib import (
     TrainConfig,
     latest_match_for_player,
@@ -14,7 +20,6 @@ from testLib import (
     train_model,
 )
 from testLib.data.matches import resolve_data_root
-from predict_outcome import PredictRequest, predict_outcome
 import argparse
 import sys
 import re
@@ -451,4 +456,3 @@ def main(argv=None):
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

@@ -10,7 +10,10 @@ from pathlib import Path
 from datetime import datetime
 import pandas as pd
 
-from parser import parse_rank_date_col
+try:
+    from .parser import parse_rank_date_col
+except ImportError:  # pragma: no cover - allow running via src on sys.path
+    from parser import parse_rank_date_col
 
 # class DecisionTreeModel:
 

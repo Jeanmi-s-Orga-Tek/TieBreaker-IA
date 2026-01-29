@@ -28,6 +28,16 @@ except ImportError as exc:
 LOGGER = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
+try:
+    from .build_dataset import add_derived_features
+except ImportError:  # pragma: no cover - allow running via src on sys.path
+    from build_dataset import add_derived_features
+
+try:
+    from .models import DataHub
+except ImportError:  # pragma: no cover - allow running via src on sys.path
+    from models import DataHub
+
 EXCLUDE_COLUMNS = {
     "y",
     "A_name",
@@ -74,12 +84,47 @@ class SplitConfig:
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train TieBreaker outcome model")
     parser.add_argument("--data", required=True, help="Chemin vers le dataset Parquet A/B")
+    parser.add_argument("--data-root", default="data", help="Racine des données ATP (pour enrichir le dataset)")
     parser.add_argument("--train-end-year", type=int, default=None, help="Dernière année incluse dans le train (auto si absent)")
     parser.add_argument("--val-end-year", type=int, default=None, help="Dernière année incluse dans la validation (auto si absent)")
     parser.add_argument("--model-out", default="models/outcome_model.pkl", help="Chemin de sortie du modèle (pkl)")
     parser.add_argument("--report-out", default="reports/train_metrics.json", help="Chemin du rapport JSON")
+    parser.add_argument(
+        "--xgb-params",
+        default=None,
+        help="JSON pour surcharger les hyperparamètres XGBoost (ex: '{\"max_depth\":4,\"n_estimators\":600}').",
+    )
+    parser.add_argument(
+        "--calibration",
+        choices=["auto", "isotonic", "sigmoid", "none"],
+        default="auto",
+        help="Méthode de calibration des probabilités.",
+    )
+    parser.add_argument(
+        "--player-features",
+        action="store_true",
+        help="Ajoute les features profil joueur (taille, main) depuis data-root.",
+    )
+    parser.add_argument(
+        "--recency-half-life",
+        type=float,
+        default=None,
+        help="Demi-vie (en années) pour pondérer les matches récents. Désactivé si absent.",
+    )
     parser.add_argument("--seed", type=int, default=42, help="Seed aléatoire")
     return parser.parse_args(argv)
+
+
+def _parse_xgb_params(raw: str | None) -> Dict[str, Any]:
+    if not raw:
+        return {}
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Paramètres XGBoost invalides (JSON attendu): {exc}") from exc
+    if not isinstance(parsed, dict):
+        raise ValueError("Paramètres XGBoost invalides: un objet JSON est requis.")
+    return parsed
 
 
 def load_dataset(data_path: Path) -> pd.DataFrame:
@@ -95,6 +140,66 @@ def load_dataset(data_path: Path) -> pd.DataFrame:
     df = df.dropna(subset=["y"])
     df["y"] = df["y"].astype(int)
     df["year"] = df["tourney_date"].dt.year
+    return df
+
+
+def add_player_profile_features(df: pd.DataFrame, data_root: Path) -> pd.DataFrame:
+    if df.empty:
+        return df
+    if "height_A" in df.columns and "hand_A_left" in df.columns:
+        return df
+    hub = DataHub(data_root)
+    players = hub.load_players().copy()
+    if "player_id" not in players.columns:
+        return df
+    players["player_id"] = pd.to_numeric(players["player_id"], errors="coerce")
+    players["height"] = pd.to_numeric(players.get("height"), errors="coerce")
+    hand_raw = players.get("hand")
+    if hand_raw is None:
+        players["hand"] = ""
+    else:
+        players["hand"] = hand_raw.astype(str).str.strip().str.upper().str[:1]
+
+    base_cols = ["player_id", "height", "hand"]
+    players = players[base_cols].drop_duplicates(subset=["player_id"])
+
+    df = df.merge(
+        players.rename(
+            columns={
+                "player_id": "A_player_id",
+                "height": "height_A",
+                "hand": "hand_A",
+            }
+        ),
+        on="A_player_id",
+        how="left",
+    )
+    df = df.merge(
+        players.rename(
+            columns={
+                "player_id": "B_player_id",
+                "height": "height_B",
+                "hand": "hand_B",
+            }
+        ),
+        on="B_player_id",
+        how="left",
+    )
+
+    for col in ("height_A", "height_B"):
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+    df["height_diff"] = df["height_A"] - df["height_B"]
+    df["height_missing_A"] = df["height_A"].isna().astype(int)
+    df["height_missing_B"] = df["height_B"].isna().astype(int)
+
+    df["hand_A"] = df["hand_A"].where(df["hand_A"].isin(["L", "R"]))
+    df["hand_B"] = df["hand_B"].where(df["hand_B"].isin(["L", "R"]))
+    df["hand_missing_A"] = df["hand_A"].isna().astype(int)
+    df["hand_missing_B"] = df["hand_B"].isna().astype(int)
+    df["hand_A_left"] = (df["hand_A"] == "L").astype(int)
+    df["hand_B_left"] = (df["hand_B"] == "L").astype(int)
+    df["hand_same"] = ((df["hand_A"] == df["hand_B"]) & df["hand_A"].notna() & df["hand_B"].notna()).astype(int)
+
     return df
 
 
@@ -248,19 +353,36 @@ def build_splits(
     )
 
 
-def init_classifier(seed: int) -> Tuple[Any, str]:
+def compute_recency_weights(
+    years: pd.Series,
+    reference_year: int,
+    half_life: float | None,
+) -> np.ndarray | None:
+    if half_life is None or half_life <= 0:
+        return None
+    year_vals = pd.to_numeric(years, errors="coerce").fillna(reference_year)
+    age = reference_year - year_vals
+    weights = np.power(0.5, age / half_life)
+    return weights.to_numpy()
+
+
+def init_classifier(seed: int, overrides: Dict[str, Any]) -> Tuple[Any, str]:
     LOGGER.info("Utilisation du modèle XGBoost")
-    model = XGBClassifier(
-        objective="binary:logistic",
-        eval_metric="logloss",
-        n_estimators=1000,
-        learning_rate=0.05,
-        max_depth=6,
-        subsample=0.8,
-        colsample_bytree=0.8,
-        random_state=seed,
-        n_jobs=-1,
-    )
+    params = {
+        "objective": "binary:logistic",
+        "eval_metric": "logloss",
+        "n_estimators": 1000,
+        "learning_rate": 0.05,
+        "max_depth": 6,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "tree_method": "hist",
+        "max_bin": 256,
+        "random_state": seed,
+        "n_jobs": -1,
+    }
+    params.update({k: v for k, v in overrides.items() if v is not None})
+    model = XGBClassifier(**params)
     return model, "xgboost"
 
 
@@ -268,6 +390,7 @@ def train_classifier(
     model: Any,
     imputer: SimpleImputer,
     splits: DatasetSplits,
+    sample_weight: np.ndarray | None,
 ) -> Tuple[Any, np.ndarray | None, np.ndarray | None]:
     X_train = imputer.fit_transform(splits.X_train)
     y_train = splits.y_train.to_numpy()
@@ -276,6 +399,8 @@ def train_classifier(
 
     eval_set: list[tuple[np.ndarray, np.ndarray]] = [(X_train, y_train)]
     fit_kwargs: Dict[str, Any] = {"eval_set": eval_set, "verbose": False}
+    if sample_weight is not None:
+        fit_kwargs["sample_weight"] = sample_weight
     if X_val_imp is not None and y_val_arr is not None and len(y_val_arr) > 0:
         eval_set.append((X_val_imp, y_val_arr))
         fit_kwargs["early_stopping_rounds"] = 50
@@ -298,14 +423,19 @@ def calibrate_model(
     base_model: Any,
     X_cal: np.ndarray | None,
     y_cal: np.ndarray | None,
+    method: str,
 ) -> Tuple[Any, str | None]:
+    if method == "none":
+        LOGGER.info("Calibration désactivée.")
+        return base_model, None
     if X_cal is None or y_cal is None or len(y_cal) == 0:
         LOGGER.warning("Pas de set de validation: calibration ignorée.")
         return base_model, None
     if len(np.unique(y_cal)) < 2:
         LOGGER.warning("Impossible de calibrer (une seule classe). Modèle non calibré.")
         return base_model, None
-    method = "isotonic" if len(y_cal) >= 1000 else "sigmoid"
+    if method == "auto":
+        method = "isotonic" if len(y_cal) >= 1000 else "sigmoid"
     LOGGER.info("Calibration des probabilités (%s)", method)
 
     # scikit-learn >= 1.8 removed cv='prefit'. Prefer FrozenEstimator when available.
@@ -366,6 +496,9 @@ def train_pipeline(args: argparse.Namespace) -> TrainingArtifacts:
 
     data_path = Path(args.data)
     df = load_dataset(data_path)
+    if args.player_features:
+        df = add_player_profile_features(df, Path(args.data_root))
+    df = add_derived_features(df)
     feature_cols = get_feature_columns(df)
     years = get_available_years(df)
     split_cfg = resolve_split_config(years, args.train_end_year, args.val_end_year)
@@ -379,9 +512,15 @@ def train_pipeline(args: argparse.Namespace) -> TrainingArtifacts:
     splits = build_splits(df, feature_cols, split_cfg, years, args.seed)
 
     imputer = SimpleImputer(strategy="median")
-    base_model, model_type = init_classifier(args.seed)
-    trained_model, X_cal, y_cal = train_classifier(base_model, imputer, splits)
-    calibrated_model, calibration_method = calibrate_model(trained_model, X_cal, y_cal)
+    xgb_overrides = _parse_xgb_params(args.xgb_params)
+    base_model, model_type = init_classifier(args.seed, xgb_overrides)
+    train_weights = compute_recency_weights(
+        df.loc[splits.X_train.index, "year"],
+        split_cfg.val_end_year,
+        args.recency_half_life,
+    )
+    trained_model, X_cal, y_cal = train_classifier(base_model, imputer, splits, train_weights)
+    calibrated_model, calibration_method = calibrate_model(trained_model, X_cal, y_cal, args.calibration)
     pipeline = build_final_pipeline(imputer, calibrated_model)
 
     metrics = {
@@ -396,6 +535,10 @@ def train_pipeline(args: argparse.Namespace) -> TrainingArtifacts:
             "calibration_method": calibration_method,
             "split_strategy": split_cfg.strategy,
             "auto_bounds": split_cfg.auto_bounds,
+            "recency_half_life": args.recency_half_life,
+            "xgb_params": xgb_overrides,
+            "calibration": args.calibration,
+            "player_features": args.player_features,
         },
     }
 
@@ -427,6 +570,7 @@ def main(argv: list[str] | None = None) -> int:
         "calibration_method": artifacts.calibration_method,
         "split_strategy": artifacts.metrics["config"].get("split_strategy"),
         "auto_bounds": artifacts.metrics["config"].get("auto_bounds"),
+        "recency_half_life": artifacts.metrics["config"].get("recency_half_life"),
         "created_at": datetime.now(UTC).isoformat(),
     }
     save_model(model_path, bundle)
