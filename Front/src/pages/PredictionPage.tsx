@@ -16,6 +16,11 @@ export default function PredictionPage() {
   const [player1, setPlayer1] = useState("");
   const [player2, setPlayer2] = useState("");
   const [surface, setSurface] = useState("Hard");
+  const [round, setRound] = useState("");
+  const [tournament, setTournament] = useState("");
+  const [year, setYear] = useState("");
+  const [matchDate, setMatchDate] = useState("");
+  const [allYears, setAllYears] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -31,18 +36,32 @@ export default function PredictionPage() {
     setResult(null);
 
     try {
-      console.log("🎾 Envoi de la requête de prédiction:", { player1, player2, surface });
+      const payload: Record<string, unknown> = {
+        player1_name: player1,
+        player2_name: player2,
+        surface: surface,
+      };
+
+      if (round) payload.round = round;
+      if (tournament) payload.tournament = tournament;
+      if (matchDate) payload.date = matchDate;
+      if (allYears) payload.all_years = true;
+
+      if (year && !allYears) {
+        const yearNumber = Number(year);
+        if (!Number.isNaN(yearNumber)) {
+          payload.year = yearNumber;
+        }
+      }
+
+      console.log("🎾 Envoi de la requête de prédiction:", payload);
 
       const response = await fetch("/api/predict", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          player1_name: player1,
-          player2_name: player2,
-          surface: surface,
-        }),
+        body: JSON.stringify(payload),
       });
 
       console.log("📡 Réponse reçue - Status:", response.status);
@@ -133,6 +152,82 @@ export default function PredictionPage() {
                 <p className="text-xs text-gray-500">
                   La surface influence grandement les prédictions
                 </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  🏆 Tournoi
+                </label>
+                <Input
+                  placeholder='Ex: Wimbledon'
+                  value={tournament}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTournament(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  🏅 Round
+                </label>
+                <select
+                  value={round}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setRound(e.target.value)}
+                  disabled={loading}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">--</option>
+                  <option value="F">Finale (F)</option>
+                  <option value="SF">Demi-finale (SF)</option>
+                  <option value="QF">Quart (QF)</option>
+                  <option value="R16">Huitieme (R16)</option>
+                  <option value="R32">Trente-deuxieme (R32)</option>
+                  <option value="R64">Soixante-quatrieme (R64)</option>
+                  <option value="R128">Cent-vingt-huitieme (R128)</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    📅 Annee exacte
+                  </label>
+                  <Input
+                    type="number"
+                    min={1968}
+                    max={2100}
+                    placeholder="Ex: 2023"
+                    value={year}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setYear(e.target.value)}
+                    disabled={loading || allYears}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    🗓️ Date exacte
+                  </label>
+                  <Input
+                    type="date"
+                    value={matchDate}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMatchDate(e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  id="all-years"
+                  type="checkbox"
+                  className="h-4 w-4"
+                  checked={allYears}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAllYears(e.target.checked)}
+                  disabled={loading}
+                />
+                <label htmlFor="all-years" className="text-sm font-medium">
+                  Rechercher sur toutes les annees (plus lent)
+                </label>
               </div>
 
               <Button
