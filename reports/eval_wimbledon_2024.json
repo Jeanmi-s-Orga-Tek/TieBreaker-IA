@@ -1,0 +1,15 @@
+{
+  "tourney_name": "Wimbledon",
+  "year": 2024,
+  "tourney_level": "G",
+  "model_path": "models/outcome_model_xgb_v4.pkl",
+  "feature_count": 43,
+  "metrics": {
+    "n": 127,
+    "auc": 0.7158486102897693,
+    "logloss": 0.55122641977588,
+    "brier": 0.18669235932306558,
+    "accuracy": 0.7007874015748031
+  },
+  "created_at": "2026-01-30T10:56:00.239902+00:00"
+}
