@@ -22,7 +22,7 @@
 
 **XGBoost** (eXtreme Gradient Boosting) est une implémentation optimisée et performante de l'algorithme de Gradient Boosting. Il est devenu l'un des algorithmes les plus populaires en Machine Learning pour les données tabulaires.
 
-XGBoost est une méthode d'ensemble qui combine plusieurs arbres de décision "faibles" pour créer un modèle prédictif puissant. Il excelle particulièrement sur les données structurées et a remporté de nombreuses compétitions sur Kaggle.
+XGBoost est une méthode d'ensemble qui combine plusieurs arbres de décision "faibles" pour créer un modèle prédictif puissant. Il excelle particulièrement sur les données structurées.
 
 ### 1.2 Le principe des arbres de décision boostés
 
@@ -327,23 +327,6 @@ Les retours d'expérience de la communauté permettent d'éviter les pièges cou
 - Commencer par les paramètres les plus impactants
 - Utiliser un learning rate faible avec beaucoup d'arbres
 - Toujours valider sur un set de test séparé
-
-### 4.4 S'inspirer de cas similaires
-
-Les Kaggle kernels, articles de blog et papiers scientifiques sur des problèmes similaires peuvent inspirer :
-
-- Des approches de feature engineering
-- Des stratégies de validation
-- Des ordres de grandeur pour les paramètres
-- Des métriques pertinentes
-
-### 4.5 Rappel essentiel
-
-> **L'optimisation finale doit toujours être faite sur vos données locales.**
-
-La recherche externe fournit un point de départ éclairé, pas une solution définitive.
-
----
 
 ## 5. Bonnes pratiques pour le tuning XGBoost
 
@@ -708,7 +691,7 @@ Le message clé de ce document :
 
 > **Un modèle XGBoost performant est un modèle optimisé pour vos données spécifiques.**
 
-**Recommandations finales :**
+**Conclusion finales :**
 
 1. **Utilisez la recherche externe** pour définir un espace de recherche raisonnable
 2. **Implémentez une méthodologie rigoureuse** : validation croisée, métriques adaptées
