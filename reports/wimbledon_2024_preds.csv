@@ -1,0 +1,128 @@
+tourney_date,round,surface,A_name,B_name,actual_winner,predicted_winner,p_A_win,p_B_win,correct,score,tourney_id,match_num
+2024-07-01,R128,Grass,Jannik Sinner,Yannick Hanfmann,Jannik Sinner,Jannik Sinner,0.8763065934181213,0.12369340658187866,1,6-3 6-4 3-6 6-3,2024-540,100
+2024-07-01,R128,Grass,Matteo Berrettini,Marton Fucsovics,Matteo Berrettini,Matteo Berrettini,0.5,0.5,1,7-6(3) 6-2 3-6 6-1,2024-540,101
+2024-07-01,R128,Grass,Miomir Kecmanovic,Sumit Nagal,Miomir Kecmanovic,Miomir Kecmanovic,0.5961081981658936,0.40389180183410645,1,6-2 3-6 6-3 6-4,2024-540,102
+2024-07-01,R128,Grass,Tallon Griekspoor,Daniel Elahi Galan,Tallon Griekspoor,Tallon Griekspoor,0.7435988783836365,0.2564011216163635,1,7-6(3) 6-3 6-4,2024-540,103
+2024-07-01,R128,Grass,Nicolas Jarry,Denis Shapovalov,Denis Shapovalov,Nicolas Jarry,0.8159851431846619,0.18401485681533813,0,6-1 7-5 6-4,2024-540,104
+2024-07-01,R128,Grass,Daniel Altmaier,Arthur Fery,Daniel Altmaier,Daniel Altmaier,0.6899141669273376,0.31008583307266235,1,4-6 7-6(6) 1-6 6-3 6-1,2024-540,105
+2024-07-01,R128,Grass,Alex Michelsen,Lloyd Harris,Lloyd Harris,Alex Michelsen,0.6567754745483398,0.34322452545166016,0,3-6 4-6 7-6(5) 6-2 7-6(9),2024-540,106
+2024-07-01,R128,Grass,Ben Shelton,Mattia Bellucci,Ben Shelton,Ben Shelton,0.7743300199508667,0.2256699800491333,1,4-6 6-3 3-6 6-3 6-4,2024-540,107
+2024-07-01,R128,Grass,Grigor Dimitrov,Dusan Lajovic,Grigor Dimitrov,Grigor Dimitrov,0.8763065934181213,0.12369340658187866,1,6-3 6-4 7-5,2024-540,108
+2024-07-01,R128,Grass,Juncheng Shang,Cristian Garin,Juncheng Shang,Juncheng Shang,0.5566849112510681,0.4433150887489319,1,7-5 6-4 6-4,2024-540,109
+2024-07-01,R128,Grass,Stan Wawrinka,Charles Broom,Stan Wawrinka,Stan Wawrinka,0.5961081981658936,0.40389180183410645,1,6-3 7-5 6-4,2024-540,110
+2024-07-01,R128,Grass,Adrian Mannarino,Gael Monfils,Gael Monfils,Adrian Mannarino,0.6478431224822998,0.3521568775177002,0,6-4 3-6 7-5 6-4,2024-540,111
+2024-07-01,R128,Grass,Zhizhen Zhang,Maxime Janvier,Zhizhen Zhang,Zhizhen Zhang,0.8183760643005371,0.1816239356994629,1,7-6(4) 6-3 6-2,2024-540,112
+2024-07-01,R128,Grass,Jan Lennard Struff,Fabian Marozsan,Jan Lennard Struff,Fabian Marozsan,0.4871194362640381,0.5128805637359619,0,6-4 6-7(4) 6-2 6-3,2024-540,113
+2024-07-01,R128,Grass,Hugo Gaston,Alexandre Muller,Alexandre Muller,Hugo Gaston,0.5,0.5,0,6-4 7-6(2) 7-6(5),2024-540,114
+2024-07-01,R128,Grass,Daniil Medvedev,Aleksandar Kovacevic,Daniil Medvedev,Daniil Medvedev,0.8763065934181213,0.12369340658187866,1,6-3 6-4 6-2,2024-540,115
+2024-07-01,R128,Grass,Carlos Alcaraz,Mark Lajal,Carlos Alcaraz,Carlos Alcaraz,0.8751458525657654,0.12485414743423462,1,7-6(3) 7-5 6-2,2024-540,116
+2024-07-01,R128,Grass,Sebastian Ofner,Aleksandar Vukic,Aleksandar Vukic,Sebastian Ofner,0.5566849112510681,0.4433150887489319,0,6-7(9) 6-4 6-4 3-6 7-6(8),2024-540,117
+2024-07-01,R128,Grass,Borna Coric,Felipe Meligeni Alves,Borna Coric,Borna Coric,0.5699100494384766,0.43008995056152344,1,6-3 7-6(2) 6-3,2024-540,118
+2024-07-01,R128,Grass,Frances Tiafoe,Matteo Arnaldi,Frances Tiafoe,Frances Tiafoe,0.5566849112510681,0.4433150887489319,1,6-7(5) 2-6 6-1 6-3 6-3,2024-540,119
+2024-07-01,R128,Grass,Sebastian Baez,Brandon Nakashima,Brandon Nakashima,Sebastian Baez,0.6817785501480103,0.31822144985198975,0,6-2 6-3 6-4,2024-540,120
+2024-07-01,R128,Grass,Jordan Thompson,Pavel Kotov,Jordan Thompson,Jordan Thompson,0.5,0.5,1,5-7 5-7 6-4 6-4 6-4,2024-540,121
+2024-07-01,R128,Grass,Botic Van De Zandschulp,Liam Broady,Botic Van De Zandschulp,Botic Van De Zandschulp,0.5699100494384766,0.43008995056152344,1,6-2 4-6 6-3 6-2,2024-540,122
+2024-07-01,R128,Grass,Ugo Humbert,Alexander Shevchenko,Ugo Humbert,Ugo Humbert,0.7435988783836365,0.2564011216163635,1,6-1 4-6 7-6(2) 6-7(3) 6-1,2024-540,123
+2024-07-01,R128,Grass,Tommy Paul,Pedro Martinez,Tommy Paul,Tommy Paul,0.8463114500045776,0.15368854999542236,1,6-2 6-1 4-6 6-3,2024-540,124
+2024-07-01,R128,Grass,Max Purcell,Otto Virtanen,Otto Virtanen,Max Purcell,0.6478431224822998,0.3521568775177002,0,6-3 6-2 6-2,2024-540,125
+2024-07-01,R128,Grass,Zizou Bergs,Arthur Cazaux,Arthur Cazaux,Zizou Bergs,0.5917065143585205,0.4082934856414795,0,6-1 6-4 6-7(2) 6-7(4) 7-6(8),2024-540,126
+2024-07-01,R128,Grass,Alexander Bublik,Jakub Mensik,Alexander Bublik,Alexander Bublik,0.7435988783836365,0.2564011216163635,1,4-6 6-7(2) 6-4 6-4 6-2,2024-540,127
+2024-07-01,R128,Grass,Mariano Navone,Lorenzo Sonego,Lorenzo Sonego,Mariano Navone,0.5293413400650024,0.47065865993499756,0,6-4 7-6(2) 6-4,2024-540,128
+2024-07-01,R128,Grass,Maximilian Marterer,Roberto Bautista Agut,Roberto Bautista Agut,Maximilian Marterer,0.5961081981658936,0.40389180183410645,0,6-3 6-1 6-4,2024-540,129
+2024-07-01,R128,Grass,Fabio Fognini,Luca Van Assche,Fabio Fognini,Luca Van Assche,0.4871194362640381,0.5128805637359619,0,6-1 6-3 7-5,2024-540,130
+2024-07-01,R128,Grass,Casper Ruud,Alex Bolt,Casper Ruud,Casper Ruud,0.8632478713989258,0.13675212860107422,1,7-6(2) 6-4 6-4,2024-540,131
+2024-07-01,R128,Grass,Andrey Rublev,Francisco Comesana,Francisco Comesana,Andrey Rublev,0.8463114500045776,0.15368854999542236,0,6-4 5-7 6-2 7-6(5),2024-540,132
+2024-07-01,R128,Grass,Federico Coria,Adam Walton,Adam Walton,Federico Coria,0.5566849112510681,0.4433150887489319,0,6-3 6-3 7-5,2024-540,133
+2024-07-01,R128,Grass,Luciano Darderi,Jan Choinski,Luciano Darderi,Luciano Darderi,0.7351778745651245,0.2648221254348755,1,7-5 4-6 2-6 7-5 6-2,2024-540,134
+2024-07-01,R128,Grass,Lorenzo Musetti,Constant Lestienne,Lorenzo Musetti,Lorenzo Musetti,0.8463114500045776,0.15368854999542236,1,4-6 7-6(4) 6-2 6-2,2024-540,135
+2024-07-01,R128,Grass,Sebastian Korda,Giovanni Mpetshi Perricard,Giovanni Mpetshi Perricard,Sebastian Korda,0.5566849112510681,0.4433150887489319,0,7-6(5) 6-7(4) 7-6(6) 6-7(4) 6-3,2024-540,136
+2024-07-01,R128,Grass,Nuno Borges,Yoshihito Nishioka,Yoshihito Nishioka,Nuno Borges,0.5699100494384766,0.43008995056152344,0,6-2 7-6(6) 2-6 6-3,2024-540,137
+2024-07-01,R128,Grass,Emil Ruusuvuori,Mackenzie Mcdonald,Emil Ruusuvuori,Emil Ruusuvuori,0.5317919254302979,0.46820807456970215,1,7-6(6) 4-6 5-7 7-6(6) 6-3,2024-540,138
+2024-07-01,R128,Grass,Stefanos Tsitsipas,Taro Daniel,Stefanos Tsitsipas,Stefanos Tsitsipas,0.8751458525657654,0.12485414743423462,1,7-6(5) 6-4 7-5,2024-540,139
+2024-07-01,R128,Grass,Taylor Fritz,Christopher Oconnell,Taylor Fritz,Taylor Fritz,0.8463114500045776,0.15368854999542236,1,6-1 6-2 6-4,2024-540,140
+2024-07-01,R128,Grass,Arthur Rinderknech,Kei Nishikori,Arthur Rinderknech,Arthur Rinderknech,0.5961081981658936,0.40389180183410645,1,5-7 6-4 6-7(2) 6-3 6-2,2024-540,141
+2024-07-01,R128,Grass,Flavio Cobolli,Rinky Hijikata,Flavio Cobolli,Flavio Cobolli,0.5961081981658936,0.40389180183410645,1,7-5 4-6 6-4 6-4,2024-540,142
+2024-07-01,R128,Grass,Alejandro Tabilo,Daniel Evans,Alejandro Tabilo,Alejandro Tabilo,0.6343699097633362,0.3656300902366638,1,6-2 7-5 6-3,2024-540,143
+2024-07-01,R128,Grass,Jack Draper,Elias Ymer,Jack Draper,Jack Draper,0.7435988783836365,0.2564011216163635,1,3-6 6-3 6-3 4-6 6-3,2024-540,144
+2024-07-01,R128,Grass,Cameron Norrie,Facundo Diaz Acosta,Cameron Norrie,Cameron Norrie,0.5917065143585205,0.4082934856414795,1,7-5 7-5 6-3,2024-540,145
+2024-07-01,R128,Grass,Marcos Giron,Henry Searle,Marcos Giron,Marcos Giron,0.7743300199508667,0.2256699800491333,1,3-6 6-3 6-4 6-4,2024-540,146
+2024-07-01,R128,Grass,Alexander Zverev,Roberto Carballes Baena,Alexander Zverev,Alexander Zverev,0.8751458525657654,0.12485414743423462,1,6-2 6-4 6-2,2024-540,147
+2024-07-01,R128,Grass,Hubert Hurkacz,Radu Albot,Hubert Hurkacz,Hubert Hurkacz,0.8463114500045776,0.15368854999542236,1,5-7 6-4 6-3 6-4,2024-540,148
+2024-07-01,R128,Grass,Arthur Fils,Dominic Stricker,Arthur Fils,Arthur Fils,0.7435988783836365,0.2564011216163635,1,6-3 6-2 3-6 6-4,2024-540,149
+2024-07-01,R128,Grass,Tomas Machac,David Goffin,Tomas Machac,Tomas Machac,0.7435988783836365,0.2564011216163635,1,3-6 3-6 6-4 6-1 7-6(5),2024-540,150
+2024-07-01,R128,Grass,Francisco Cerundolo,Roman Safiullin,Roman Safiullin,Francisco Cerundolo,0.6343699097633362,0.3656300902366638,0,6-7(5) 3-6 7-5 6-3 6-4,2024-540,151
+2024-07-01,R128,Grass,Felix Auger Aliassime,Thanasi Kokkinakis,Thanasi Kokkinakis,Felix Auger Aliassime,0.7435988783836365,0.2564011216163635,0,4-6 5-7 7-6(9) 6-4 6-4,2024-540,152
+2024-07-01,R128,Grass,Laslo Djere,Lucas Pouille,Lucas Pouille,Laslo Djere,0.7743300199508667,0.2256699800491333,0,3-6 7-6(4) 3-6 6-3 6-1,2024-540,153
+2024-07-01,R128,Grass,Jaume Munar,Billy Harris,Jaume Munar,Jaume Munar,0.5699100494384766,0.43008995056152344,1,6-4 6-4 3-6 6-3,2024-540,154
+2024-07-01,R128,Grass,Alex De Minaur,James Duckworth,Alex De Minaur,Alex De Minaur,0.8751458525657654,0.12485414743423462,1,7-6(1) 7-6(3) 7-6(4),2024-540,155
+2024-07-01,R128,Grass,Holger Rune,Soon Woo Kwon,Holger Rune,Holger Rune,0.7435988783836365,0.2564011216163635,1,6-1 6-4 6-4,2024-540,156
+2024-07-01,R128,Grass,Thiago Seyboth Wild,Paul Jubb,Thiago Seyboth Wild,Thiago Seyboth Wild,0.5961081981658936,0.40389180183410645,1,1-6 3-6 7-6(6) 6-4 7-5,2024-540,157
+2024-07-01,R128,Grass,Christopher Eubanks,Quentin Halys,Quentin Halys,Christopher Eubanks,0.6899141669273376,0.31008583307266235,0,6-4 6-4 6-2,2024-540,158
+2024-07-01,R128,Grass,Karen Khachanov,Aslan Karatsev,Karen Khachanov,Karen Khachanov,0.7435988783836365,0.2564011216163635,1,6-3 6-7(4) 7-6(11) 2-0 RET,2024-540,159
+2024-07-01,R128,Grass,Tomas Martin Etcheverry,Luca Nardi,Tomas Martin Etcheverry,Tomas Martin Etcheverry,0.5917065143585205,0.4082934856414795,1,6-1 6-4 6-2,2024-540,160
+2024-07-01,R128,Grass,Alexei Popyrin,Thiago Monteiro,Alexei Popyrin,Alexei Popyrin,0.5917065143585205,0.4082934856414795,1,6-4 6-7(8) 6-3 6-4,2024-540,161
+2024-07-01,R128,Grass,Alejandro Moro Canas,Jacob Fearnley,Jacob Fearnley,Alejandro Moro Canas,0.5,0.5,0,7-5 6-4 7-6(12),2024-540,162
+2024-07-01,R128,Grass,Novak Djokovic,Vit Kopriva,Novak Djokovic,Novak Djokovic,0.8751458525657654,0.12485414743423462,1,6-1 6-2 6-2,2024-540,163
+2024-07-01,R64,Grass,Jannik Sinner,Matteo Berrettini,Jannik Sinner,Jannik Sinner,0.9878048896789551,0.012195110321044922,1,7-6(3) 7-6(4) 2-6 7-6(4),2024-540,164
+2024-07-01,R64,Grass,Tallon Griekspoor,Miomir Kecmanovic,Miomir Kecmanovic,Tallon Griekspoor,0.5961081981658936,0.40389180183410645,0,4-6 7-6(7) 1-6 6-2 6-3,2024-540,165
+2024-07-01,R64,Grass,Daniel Altmaier,Denis Shapovalov,Denis Shapovalov,Daniel Altmaier,0.5961081981658936,0.40389180183410645,0,7-6(3) 6-3 1-6 6-7(3) 6-4,2024-540,166
+2024-07-01,R64,Grass,Ben Shelton,Lloyd Harris,Ben Shelton,Ben Shelton,0.7435988783836365,0.2564011216163635,1,4-6 7-6(5) 6-7(5) 6-3 7-6(7),2024-540,167
+2024-07-01,R64,Grass,Grigor Dimitrov,Juncheng Shang,Grigor Dimitrov,Grigor Dimitrov,0.8463114500045776,0.15368854999542236,1,5-7 6-7(4) 6-4 6-2 6-4,2024-540,168
+2024-07-01,R64,Grass,Gael Monfils,Stan Wawrinka,Gael Monfils,Gael Monfils,0.7743300199508667,0.2256699800491333,1,7-6(5) 6-4 7-6(3),2024-540,169
+2024-07-01,R64,Grass,Zhizhen Zhang,Jan Lennard Struff,Jan Lennard Struff,Jan Lennard Struff,0.4871194362640381,0.5128805637359619,1,5-7 6-3 7-6(1) 7-6(8),2024-540,170
+2024-07-01,R64,Grass,Daniil Medvedev,Alexandre Muller,Daniil Medvedev,Daniil Medvedev,0.8751458525657654,0.12485414743423462,1,6-7(3) 7-6(4) 6-4 7-5,2024-540,171
+2024-07-01,R64,Grass,Carlos Alcaraz,Aleksandar Vukic,Carlos Alcaraz,Carlos Alcaraz,0.8463114500045776,0.15368854999542236,1,7-6(5) 6-2 6-2,2024-540,172
+2024-07-01,R64,Grass,Frances Tiafoe,Borna Coric,Frances Tiafoe,Frances Tiafoe,0.7435988783836365,0.2564011216163635,1,7-6(5) 6-1 6-3,2024-540,173
+2024-07-01,R64,Grass,Jordan Thompson,Brandon Nakashima,Brandon Nakashima,Jordan Thompson,0.5566849112510681,0.4433150887489319,0,6-3 6-2 6-2,2024-540,174
+2024-07-01,R64,Grass,Ugo Humbert,Botic Van De Zandschulp,Ugo Humbert,Ugo Humbert,0.7435988783836365,0.2564011216163635,1,7-6(9) 6-1 6-3,2024-540,175
+2024-07-01,R64,Grass,Tommy Paul,Otto Virtanen,Tommy Paul,Tommy Paul,0.8463114500045776,0.15368854999542236,1,4-6 6-3 5-7 7-5 6-4,2024-540,176
+2024-07-01,R64,Grass,Alexander Bublik,Arthur Cazaux,Alexander Bublik,Alexander Bublik,0.7435988783836365,0.2564011216163635,1,6-4 7-6(1) 6-4,2024-540,177
+2024-07-01,R64,Grass,Lorenzo Sonego,Roberto Bautista Agut,Roberto Bautista Agut,Lorenzo Sonego,0.6817785501480103,0.31822144985198975,0,6-3 3-6 6-3 6-4,2024-540,178
+2024-07-01,R64,Grass,Casper Ruud,Fabio Fognini,Fabio Fognini,Casper Ruud,0.8183760643005371,0.1816239356994629,0,6-4 7-5 6-7(1) 6-3,2024-540,179
+2024-07-01,R64,Grass,Adam Walton,Francisco Comesana,Francisco Comesana,Adam Walton,0.5961081981658936,0.40389180183410645,0,7-5 1-6 6-7(12) 6-1 7-6(8),2024-540,180
+2024-07-01,R64,Grass,Lorenzo Musetti,Luciano Darderi,Lorenzo Musetti,Lorenzo Musetti,0.6567754745483398,0.34322452545166016,1,6-4 4-6 6-7(5) 6-4 6-4,2024-540,181
+2024-07-01,R64,Grass,Giovanni Mpetshi Perricard,Yoshihito Nishioka,Giovanni Mpetshi Perricard,Giovanni Mpetshi Perricard,0.5961081981658936,0.40389180183410645,1,6-4 6-1 6-2,2024-540,182
+2024-07-01,R64,Grass,Stefanos Tsitsipas,Emil Ruusuvuori,Emil Ruusuvuori,Stefanos Tsitsipas,0.8463114500045776,0.15368854999542236,0,7-6(6) 7-6(10) 3-6 6-3,2024-540,183
+2024-07-01,R64,Grass,Taylor Fritz,Arthur Rinderknech,Taylor Fritz,Taylor Fritz,0.8183760643005371,0.1816239356994629,1,6-3 6-4 3-6 6-4,2024-540,184
+2024-07-01,R64,Grass,Alejandro Tabilo,Flavio Cobolli,Alejandro Tabilo,Alejandro Tabilo,0.6567754745483398,0.34322452545166016,1,7-6(4) 7-6(4) 4-6 4-6 6-4,2024-540,185
+2024-07-01,R64,Grass,Jack Draper,Cameron Norrie,Cameron Norrie,Jack Draper,0.5566849112510681,0.4433150887489319,0,7-6(3) 6-4 7-6(6),2024-540,186
+2024-07-01,R64,Grass,Alexander Zverev,Marcos Giron,Alexander Zverev,Alexander Zverev,0.8751458525657654,0.12485414743423462,1,6-2 6-1 6-4,2024-540,187
+2024-07-01,R64,Grass,Hubert Hurkacz,Arthur Fils,Arthur Fils,Hubert Hurkacz,0.7988764047622681,0.20112359523773193,0,7-6(2) 6-4 2-6 6-6 RET,2024-540,188
+2024-07-01,R64,Grass,Tomas Machac,Roman Safiullin,Roman Safiullin,Tomas Machac,0.5293413400650024,0.47065865993499756,0,6-2 6-4 5-7 6-3,2024-540,189
+2024-07-01,R64,Grass,Thanasi Kokkinakis,Lucas Pouille,Lucas Pouille,Thanasi Kokkinakis,0.6478431224822998,0.3521568775177002,0,2-6 7-5 5-2 RET,2024-540,190
+2024-07-01,R64,Grass,Alex De Minaur,Jaume Munar,Alex De Minaur,Alex De Minaur,0.8751458525657654,0.12485414743423462,1,6-2 6-2 7-5,2024-540,191
+2024-07-01,R64,Grass,Holger Rune,Thiago Seyboth Wild,Holger Rune,Holger Rune,0.7988764047622681,0.20112359523773193,1,3-6 6-3 6-2 6-2,2024-540,192
+2024-07-01,R64,Grass,Karen Khachanov,Quentin Halys,Quentin Halys,Karen Khachanov,0.7969762682914734,0.2030237317085266,0,4-6 6-3 3-6 6-3 6-4,2024-540,193
+2024-07-01,R64,Grass,Tomas Martin Etcheverry,Alexei Popyrin,Alexei Popyrin,Tomas Martin Etcheverry,0.7177419066429138,0.2822580933570862,0,3-6 6-4 4-6 6-4 6-3,2024-540,194
+2024-07-01,R64,Grass,Novak Djokovic,Jacob Fearnley,Novak Djokovic,Novak Djokovic,0.8763065934181213,0.12369340658187866,1,6-3 6-4 5-7 7-5,2024-540,195
+2024-07-01,R32,Grass,Jannik Sinner,Miomir Kecmanovic,Jannik Sinner,Jannik Sinner,0.8763065934181213,0.12369340658187866,1,6-1 6-4 6-2,2024-540,196
+2024-07-01,R32,Grass,Ben Shelton,Denis Shapovalov,Ben Shelton,Ben Shelton,0.7435988783836365,0.2564011216163635,1,6-7(4) 6-2 6-4 4-6 6-2,2024-540,197
+2024-07-01,R32,Grass,Grigor Dimitrov,Gael Monfils,Grigor Dimitrov,Grigor Dimitrov,0.8183760643005371,0.1816239356994629,1,6-3 6-4 6-3,2024-540,198
+2024-07-01,R32,Grass,Daniil Medvedev,Jan Lennard Struff,Daniil Medvedev,Daniil Medvedev,0.7988764047622681,0.20112359523773193,1,6-1 6-3 4-6 7-6(3),2024-540,199
+2024-07-01,R32,Grass,Carlos Alcaraz,Frances Tiafoe,Carlos Alcaraz,Carlos Alcaraz,0.8463114500045776,0.15368854999542236,1,5-7 6-2 4-6 7-6(2) 6-2,2024-540,200
+2024-07-01,R32,Grass,Ugo Humbert,Brandon Nakashima,Ugo Humbert,Ugo Humbert,0.6817785501480103,0.31822144985198975,1,7-6(9) 6-3 6-7(5) 7-6(6),2024-540,201
+2024-07-01,R32,Grass,Tommy Paul,Alexander Bublik,Tommy Paul,Tommy Paul,0.6899141669273376,0.31008583307266235,1,6-3 6-4 6-2,2024-540,202
+2024-07-01,R32,Grass,Fabio Fognini,Roberto Bautista Agut,Roberto Bautista Agut,Fabio Fognini,0.6567754745483398,0.34322452545166016,0,7-6(6) 3-6 5-7 7-6(1) 6-4,2024-540,203
+2024-07-01,R32,Grass,Lorenzo Musetti,Francisco Comesana,Lorenzo Musetti,Lorenzo Musetti,0.7435988783836365,0.2564011216163635,1,6-2 6-7(4) 7-6(3) 6-3,2024-540,204
+2024-07-01,R32,Grass,Giovanni Mpetshi Perricard,Emil Ruusuvuori,Giovanni Mpetshi Perricard,Giovanni Mpetshi Perricard,0.6343699097633362,0.3656300902366638,1,4-6 6-2 7-6(5) 6-4,2024-540,205
+2024-07-01,R32,Grass,Taylor Fritz,Alejandro Tabilo,Taylor Fritz,Taylor Fritz,0.6817785501480103,0.31822144985198975,1,7-6(3) 6-3 7-5,2024-540,206
+2024-07-01,R32,Grass,Alexander Zverev,Cameron Norrie,Alexander Zverev,Alexander Zverev,0.8463114500045776,0.15368854999542236,1,6-4 6-4 7-6(15),2024-540,207
+2024-07-01,R32,Grass,Arthur Fils,Roman Safiullin,Arthur Fils,Arthur Fils,0.5961081981658936,0.40389180183410645,1,4-6 6-3 1-6 6-4 6-3,2024-540,208
+2024-07-01,R32,Grass,Alex De Minaur,Lucas Pouille,Alex De Minaur,Alex De Minaur,0.8463114500045776,0.15368854999542236,1,W/O,2024-540,209
+2024-07-01,R32,Grass,Holger Rune,Quentin Halys,Holger Rune,Holger Rune,0.7743300199508667,0.2256699800491333,1,1-6 6-7(4) 6-4 7-6(4) 6-1,2024-540,210
+2024-07-01,R32,Grass,Novak Djokovic,Alexei Popyrin,Novak Djokovic,Novak Djokovic,0.8751458525657654,0.12485414743423462,1,4-6 6-3 6-4 7-6(3),2024-540,211
+2024-07-01,R16,Grass,Jannik Sinner,Ben Shelton,Jannik Sinner,Jannik Sinner,0.6899141669273376,0.31008583307266235,1,6-2 6-4 7-6(9),2024-540,212
+2024-07-01,R16,Grass,Daniil Medvedev,Grigor Dimitrov,Daniil Medvedev,Daniil Medvedev,0.6343699097633362,0.3656300902366638,1,5-3 RET,2024-540,213
+2024-07-01,R16,Grass,Carlos Alcaraz,Ugo Humbert,Carlos Alcaraz,Carlos Alcaraz,0.7743300199508667,0.2256699800491333,1,6-3 6-4 1-6 7-5,2024-540,214
+2024-07-01,R16,Grass,Tommy Paul,Roberto Bautista Agut,Tommy Paul,Tommy Paul,0.7435988783836365,0.2564011216163635,1,6-2 7-6(3) 6-2,2024-540,215
+2024-07-01,R16,Grass,Lorenzo Musetti,Giovanni Mpetshi Perricard,Lorenzo Musetti,Lorenzo Musetti,0.5961081981658936,0.40389180183410645,1,4-6 6-3 6-3 6-2,2024-540,216
+2024-07-01,R16,Grass,Alexander Zverev,Taylor Fritz,Taylor Fritz,Alexander Zverev,0.7351778745651245,0.2648221254348755,0,4-6 6-7(4) 6-4 7-6(3) 6-3,2024-540,217
+2024-07-01,R16,Grass,Alex De Minaur,Arthur Fils,Alex De Minaur,Alex De Minaur,0.6817785501480103,0.31822144985198975,1,6-2 6-4 4-6 6-3,2024-540,218
+2024-07-01,R16,Grass,Novak Djokovic,Holger Rune,Novak Djokovic,Novak Djokovic,0.6478431224822998,0.3521568775177002,1,6-3 6-4 6-2,2024-540,219
+2024-07-01,QF,Grass,Jannik Sinner,Daniil Medvedev,Daniil Medvedev,Jannik Sinner,0.5699100494384766,0.43008995056152344,0,6-7(7) 6-4 7-6(4) 2-6 6-3,2024-540,220
+2024-07-01,QF,Grass,Carlos Alcaraz,Tommy Paul,Carlos Alcaraz,Carlos Alcaraz,0.6817785501480103,0.31822144985198975,1,5-7 6-4 6-2 6-2,2024-540,221
+2024-07-01,QF,Grass,Taylor Fritz,Lorenzo Musetti,Lorenzo Musetti,Taylor Fritz,0.6343699097633362,0.3656300902366638,0,3-6 7-6(5) 6-2 3-6 6-1,2024-540,222
+2024-07-01,QF,Grass,Novak Djokovic,Alex De Minaur,Novak Djokovic,Novak Djokovic,0.6567754745483398,0.34322452545166016,1,W/O,2024-540,223
+2024-07-01,SF,Grass,Carlos Alcaraz,Daniil Medvedev,Carlos Alcaraz,Carlos Alcaraz,0.5917065143585205,0.4082934856414795,1,6-7(1) 6-3 6-4 6-4,2024-540,224
+2024-07-01,SF,Grass,Novak Djokovic,Lorenzo Musetti,Novak Djokovic,Novak Djokovic,0.8763065934181213,0.12369340658187866,1,6-4 7-6(2) 6-4,2024-540,225
+2024-07-01,F,Grass,Novak Djokovic,Carlos Alcaraz,Carlos Alcaraz,Carlos Alcaraz,0.3804347813129425,0.6195652186870575,1,6-2 6-2 7-6(4),2024-540,226
