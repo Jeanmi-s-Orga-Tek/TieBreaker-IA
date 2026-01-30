@@ -41,11 +41,7 @@ Cette approche permet d'obtenir des modèles très précis tout en conservant un
 
 ### 1.3 Question centrale
 
-Face à la complexité du tuning des modèles XGBoost, une question pratique se pose :
-
 > **Est-il utile de rechercher des hyperparamètres XGBoost trouvés en ligne pour améliorer son propre modèle ?**
-
-Ce document explore cette question en analysant les limites de cette approche, les bonnes pratiques de tuning, et les différences fondamentales avec le Deep Learning où le transfer learning est courant.
 
 ---
 
@@ -92,7 +88,7 @@ Un même jeu d'hyperparamètres ne produira pas les mêmes résultats sur deux d
 Contrôle la profondeur maximale de chaque arbre.
 
 ```python
-max_depth = 6  # Valeur par défaut
+max_depth = 6  # Valeur utilisée dans TieBreaker-IA
 ```
 
 | Valeur | Effet |
@@ -100,14 +96,14 @@ max_depth = 6  # Valeur par défaut
 | Faible (2-4) | Arbres simples, moins de risque d'overfitting |
 | Élevée (8-15) | Arbres complexes, capture plus de patterns mais risque d'overfitting |
 
-**Plage recommandée** : 3 à 10
+**Plage recommandée** : 3 à 10  
 
 #### `learning_rate` (Taux d'apprentissage)
 
 Réduit la contribution de chaque arbre pour permettre un apprentissage plus progressif.
 
 ```python
-learning_rate = 0.1  # Aussi appelé 'eta'
+learning_rate = 0.05  # Valeur utilisée dans TieBreaker-IA
 ```
 
 | Valeur | Effet |
@@ -115,16 +111,16 @@ learning_rate = 0.1  # Aussi appelé 'eta'
 | Faible (0.01-0.05) | Apprentissage lent mais précis, nécessite plus d'arbres |
 | Élevée (0.1-0.3) | Apprentissage rapide mais risque de convergence sous-optimale |
 
-**Plage recommandée** : 0.01 à 0.3
+**Plage recommandée** : 0.01 à 0.3  
 
-**Règle empirique** : Plus le `learning_rate` est faible, plus `n_estimators` doit être élevé.
+**Règle empirique** : Plus le `learning_rate` est faible, plus `n_estimators` doit être élevé. C'est pourquoi TieBreaker-IA utilise 1000 arbres avec un learning rate de 0.05.
 
 #### `n_estimators` (Nombre d'arbres)
 
 Définit le nombre total d'arbres dans l'ensemble.
 
 ```python
-n_estimators = 100  # Valeur par défaut
+n_estimators = 1000  # Valeur utilisée dans TieBreaker-IA
 ```
 
 | Valeur | Effet |
@@ -132,14 +128,14 @@ n_estimators = 100  # Valeur par défaut
 | Faible (50-100) | Entraînement rapide, potentiellement sous-optimal |
 | Élevée (500-2000) | Meilleure performance potentielle, temps de calcul plus long |
 
-**Plage recommandée** : 100 à 1000 (avec early stopping)
+**Plage recommandée** : 100 à 1000 (avec early stopping)  
 
 #### `subsample` (Sous-échantillonnage des lignes)
 
 Fraction des échantillons utilisés pour entraîner chaque arbre.
 
 ```python
-subsample = 0.8  # 80% des données par arbre
+subsample = 0.8  # Valeur utilisée dans TieBreaker-IA
 ```
 
 | Valeur | Effet |
@@ -147,14 +143,14 @@ subsample = 0.8  # 80% des données par arbre
 | Faible (0.5-0.7) | Plus de régularisation, réduit l'overfitting |
 | Élevée (0.8-1.0) | Utilise plus de données, peut augmenter la variance |
 
-**Plage recommandée** : 0.6 à 1.0
+**Plage recommandée** : 0.6 à 1.0  
 
 #### `colsample_bytree` (Sous-échantillonnage des colonnes)
 
 Fraction des features utilisées pour entraîner chaque arbre.
 
 ```python
-colsample_bytree = 0.8  # 80% des features par arbre
+colsample_bytree = 0.8  # Valeur utilisée dans TieBreaker-IA
 ```
 
 | Valeur | Effet |
@@ -162,14 +158,14 @@ colsample_bytree = 0.8  # 80% des features par arbre
 | Faible (0.5-0.7) | Réduit la corrélation entre arbres, plus de diversité |
 | Élevée (0.8-1.0) | Utilise plus de features, moins de diversité |
 
-**Plage recommandée** : 0.6 à 1.0
+**Plage recommandée** : 0.6 à 1.0  
 
 #### `gamma` (Réduction minimale de perte)
 
 Seuil de réduction de la fonction de perte requis pour effectuer un split.
 
 ```python
-gamma = 0  # Valeur par défaut (pas de seuil)
+gamma = 0  # Valeur par défaut
 ```
 
 | Valeur | Effet |
@@ -196,15 +192,15 @@ min_child_weight = 1  # Valeur par défaut
 
 ### 2.5 Résumé des hyperparamètres
 
-| Hyperparamètre | Rôle | Plage typique | Impact principal |
-|----------------|------|---------------|------------------|
-| `max_depth` | Complexité des arbres | 3 - 10 | Overfitting vs Underfitting |
-| `learning_rate` | Vitesse d'apprentissage | 0.01 - 0.3 | Précision vs Rapidité |
-| `n_estimators` | Nombre d'arbres | 100 - 1000 | Performance vs Temps |
-| `subsample` | % données par arbre | 0.6 - 1.0 | Régularisation |
-| `colsample_bytree` | % features par arbre | 0.6 - 1.0 | Diversité |
-| `gamma` | Seuil de split | 0 - 5 | Régularisation |
-| `min_child_weight` | Taille min des feuilles | 1 - 10 | Régularisation |
+| Hyperparamètre | Rôle | Plage typique | Valeur TieBreaker-IA | Impact principal |
+|----------------|------|---------------|----------------------|------------------|
+| `max_depth` | Complexité des arbres | 3 - 10 | **6** | Overfitting vs Underfitting |
+| `learning_rate` | Vitesse d'apprentissage | 0.01 - 0.3 | **0.05** | Précision vs Rapidité |
+| `n_estimators` | Nombre d'arbres | 100 - 1000 | **1000** | Performance vs Temps |
+| `subsample` | % données par arbre | 0.6 - 1.0 | **0.8** | Régularisation |
+| `colsample_bytree` | % features par arbre | 0.6 - 1.0 | **0.8** | Diversité |
+| `gamma` | Seuil de split | 0 - 5 | 0 (défaut) | Régularisation |
+| `min_child_weight` | Taille min des feuilles | 1 - 10 | 1 (défaut) | Régularisation |
 
 ---
 
@@ -276,8 +272,6 @@ Des paramètres efficaces pour un problème peuvent être inefficaces pour un au
 ### 3.6 Conclusion sur les limites
 
 > **Copier des paramètres trouvés en ligne ne garantit en aucun cas de bonnes performances.**
-
-Les hyperparamètres sont comme une recette de cuisine : les proportions qui fonctionnent pour un chef avec ses ingrédients ne produiront pas le même résultat avec d'autres ingrédients.
 
 ---
 
@@ -703,7 +697,3 @@ Le message clé de ce document :
 La connaissance qui se transfère n'est pas les paramètres eux-mêmes, mais l'expertise en méthodologie de tuning. Investissez dans cette compétence plutôt que dans la recherche de raccourcis.
 
 ---
-
-*Document rédigé pour le projet TieBreaker-IA*
-
-*Janvier 2026*
